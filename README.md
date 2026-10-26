@@ -69,7 +69,7 @@ libs/
 └─ armeabi-v7a/                   ← 可选，出 32 位包才需要
 ```
 
-> `libs/` 因版权原因被 `.gitignore` 排除，必须自己准备。
+> `libs/` 因版权原因被 `.gitignore` 排除，必须自己准备。详细下载地址、校验值与文件清单见 **[libs/README.md](libs/README.md)**。
 
 ### 2. 编译 Java 桥接层
 
