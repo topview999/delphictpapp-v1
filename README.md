@@ -51,13 +51,13 @@ Delphi 无法继承 Java 类，所以不能走"Delphi 直接调 C++ 头文件"�
 - RAD Studio 11.3（Delphi，FMX 框架）
 - Android SDK + NDK（随 RAD Studio 安装）
 - JDK 17（只在重新编译 Java 桥接层时需要）
-- CTP SDK 6.7.13 Android 版（需自行下载，不随仓库分发）
+- CTP SDK 6.7.13 Android 版（仓库已内置）
 
 ## 快速开始
 
-### 1. 获取 CTP SDK
+### 1. CTP SDK（已内置）
 
-从 SimNow 下载 `TraderapiMduserapi_6.7.13_Android.zip`（34,259,304 字节，MD5 `a0a4d2cdbd12e21938d6ce09ec54b2c6`），解包后把以下内容放进本项目的 `libs/`：
+仓库已包含 6.7.13 版所需的全部文件。仅在更新版本时，才需要从 SimNow 下载 `TraderapiMduserapi_6.7.13_Android.zip`（34,259,304 字节，MD5 `a0a4d2cdbd12e21938d6ce09ec54b2c6`），解包后替换 `libs/` 下同名文件：
 
 ```
 libs/
@@ -69,17 +69,20 @@ libs/
 └─ armeabi-v7a/                   ← 可选，出 32 位包才需要
 ```
 
-> `libs/` 因版权原因被 `.gitignore` 排除，必须自己准备。详细下载地址、校验值与文件清单见 **[libs/README.md](libs/README.md)**。
+> 本仓库**已内置** `libs/`（`arm64-v8a` + `armeabi-v7a` 全套 `.so` 与 `classes.jar`），克隆后可直接使用。
+> 仅在需要更换 SDK 版本时，才需按 **[libs/README.md](libs/README.md)** 重新获取并替换。
 
-### 2. 编译 Java 桥接层
+### 2. Java 桥接层（已内置预编译 jar）
+
+仓库已内置 `java/CtpBridge.jar`（含 kotlin-stdlib），**不需要 JDK 即可直接编译 APK**。
+
+只有修改了 `java/src` 里的桥接源码时才需要重新构建：
 
 ```bash
 cd java
 ./build.sh          # 依赖 javac 17 与 libs/classes.jar
 # 产出 CtpBridge.jar（已内置 kotlin-stdlib）
 ```
-
-不想自己编译的话，用 `java/src/com/dctp/bridge/CtpBridge.java` 自行编译亦可。
 
 ### 3. 在 RAD Studio 里打开
 
@@ -162,7 +165,7 @@ FlowPath =                                ; 留空 = 应用私有目录/ctpflow
 ├─ java/
 │  ├─ src/com/dctp/bridge/CtpBridge.java   ★ 核心桥接逻辑
 │  └─ build.sh                     重新编译 jar
-├─ libs/                           CTP SDK（需自行放置）
+├─ libs/                           CTP SDK 二进制（已内置）
 └─ docs/开发笔记.md                 SDK 逆向细节、踩坑记录、错误对照
 ```
 
@@ -180,7 +183,7 @@ FlowPath =                                ; 留空 = 应用私有目录/ctpflow
 Issue 和 PR 都欢迎。提交前请确认：
 
 1. 没有提交任何真实账号、密码、AuthCode、服务器地址
-2. 没有提交 `libs/` 下的第三方 SDK 文件
+2. 如更新 `libs/` 下的 SDK 文件，请在提交信息里注明版本与来源
 3. commit 信息用 `feat:` / `fix:` / `docs:` / `refactor:` 前缀
 
 ## 免责声明
