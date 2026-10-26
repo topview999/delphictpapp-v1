@@ -1,10 +1,12 @@
-java/
+# ---- 第三方 CTP SDK（版权归上期技术 SimNow，不可再分发）----
+# 需自行下载 6.7.13 版 Android 包，解包后放入 libs/，详见 README
 libs/
-Android64/
-Win64/
-Win32/
 
-# Delphi 编译产物
+# ---- Java 桥接层：保留源码，忽略构建产物 ----
+java/out/
+java/*.jar
+
+# ---- Delphi 编译产物 ----
 __history/
 __recovery/
 *.dcu
@@ -17,15 +19,22 @@ __recovery/
 *.dex
 *.deploy
 *.log
+Android64/
+Win64/
+Win32/
 
-# IDE 本地配置与缓存（因人而异，不应共享）
+# ---- IDE 本地配置与缓存（因人而异，不应共享）----
 *.identcache
 *.dproj.local
 *.dsk
 *.stat
 
-# 备份文件
+# ---- 备份文件 ----
 *.bak
 
-# 真实登录配置（含账号密码，绝不入库；示例见 ctp.ini.sample）
+# ---- 真实登录配置（含账号密码，绝不入库；示例见 ctp.ini.sample）----
 ctp.ini
+
+# Java 编译中间产物
+*.class
+java/stubout/

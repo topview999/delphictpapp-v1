@@ -1,117 +1,96 @@
-# 海通期货 CTP 安卓交易客户端（Delphi 11.3 / FMX）
+# CTP 安卓交易客户端（Delphi FMX）
 
-> ⚠️ **切勿提交真实账号与密码**。本仓库所有凭证均为占位符，真实配置请放 `ctp.ini`
-> （已在 `.gitignore` 中排除），不要写进源码、README 或提交历史。
+用 Delphi 11.3 / FireMonkey 写的上期技术 CTP 期货交易客户端，直连生产柜台，支持登录、下单、撤单、资金持仓查询。
 
-## 一、先说最重要的三个结论
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+![Platform](https://img.shields.io/badge/Platform-Android%2064--bit-green)
+![Delphi](https://img.shields.io/badge/Delphi-11.3%20FMX-red)
 
-1. **API 已下载并校验通过**：`TraderapiMduserapi_6.7.13_Android.zip`，34,259,304 字节，
-   MD5 = `a0a4d2cdbd12e21938d6ce09ec54b2c6`，与 SimNow 页面公布值一致。
-2. **SimNow 的 Android 版 API 不是 C++ 头文件 + .so 的裸接口**，而是
-   **SWIG 生成的 `.aar`（Java 类 + JNI `.so`）**。其中回调接口 `CThostFtdcTraderSpi`
-   是 SWIG **director** 类，**必须在 Java 侧继承**才能收到 `OnRspUserLogin` 等回调。
-   Delphi 无法继承 Java 类，所以不能用"Delphi 直接吃 C++ 头文件"的常规老路。
-3. 因此本工程采用**桥接架构**：把全部 CTP 逻辑（结构体赋值、回调、错误码）
-   收敛到一个 12KB 的 Java 类 `com.dctp.bridge.CtpBridge` 里，对 Delphi 只暴露
-   「若干 String/int 参数的普通方法 + 一行行文本事件」。Delphi 侧代码干净、无 JNI 编组、
-   无 SWIG 结构体翻译，稳定性最高。
-
-> 说明：本机没有安装 RAD Studio 11.3，**Delphi 工程我没法在这里编译和上机验证**；
-> Java 桥接层是**真实编译通过**的（javac 17，零错误），这是本工程里唯一能在此环境验证的环节。
-> Delphi 代码按 RAD 11.3 的 FMX API 编写，首次编译若有小问题，多半是 FMX 控件属性差异，改动很小。
+> ⚠️ **风险提示**：本项目连接的是**真实交易柜台**，下单即产生真实资金委托。
+> 请先在评测环境（SimNow）验证，或仅用最小手数试单。作者不对任何交易损失负责。
+>
+> 🔒 **切勿提交真实账号密码**。仓库内所有凭证均为占位符，真实配置放 `ctp.ini`（已被 `.gitignore` 排除）。
 
 ---
 
-## 二、已核实的事实（不是猜的，全部从 SDK 字节码/反汇编读出）
+## 这是什么
 
-| 项目 | 值 |
+CTP（Comprehensive Transaction Platform）是上期技术提供的期货交易 API，国内期货公司的交易终端基本都基于它。官方 Android SDK 只提供 **SWIG 生成的 `.aar`（Java 类 + JNI `.so`）**，其中回调接口 `CThostFtdcTraderSpi` 是 SWIG director 类，**必须在 Java 侧继承**才能收到回调。
+
+Delphi 无法继承 Java 类，所以不能走"Delphi 直接调 C++ 头文件"的常规路线。
+
+本项目的做法是**桥接**：把全部 CTP 逻辑（结构体赋值、回调、错误码）收敛进一个 Java 类 `com.dctp.bridge.CtpBridge`，对 Delphi 只暴露「若干个 String/int 参数的普通方法 + 一行行文本事件」。
+
+```
+┌─────────────────────────┐
+│ Delphi / FMX UI         │  4 个页签，纯 Pascal，无 JNI 编组
+└───────────┬─────────────┘
+            │  普通方法调用 + 300ms 轮询 pollEvents()
+┌───────────▼─────────────┐
+│ Java: CtpBridge         │  结构体赋值 / SPI 回调 / 错误码翻译
+└───────────┬─────────────┘
+            │  SWIG 绑定
+┌───────────▼─────────────┐
+│ libthosttraderapi.so    │  官方原生库
+└─────────────────────────┘
+```
+
+好处是 Delphi 侧代码干净、不碰 JNI 类型转换、不碰 SWIG 结构体翻译；回调也不从原生线程直接跨进 Delphi（用定时器轮询事件队列），规避了 JNI 线程 attach 这类最容易出错的地方。
+
+## 功能
+
+| 页签 | 内容 |
 |---|---|
-| 交易 API 类 | `com.sfit.ctp.thosttraderapi.CThostFtdcTraderApi` |
-| 回调 SPI 类 | `com.sfit.ctp.thosttraderapi.CThostFtdcTraderSpi`（有 public 无参构造，可继承） |
-| 创建实例 | `CThostFtdcTraderApi.CreateFtdcTraderApi(String flowPath, boolean productionMode)` |
-| 登录 | `ReqUserLogin(android.content.Context, CThostFtdcReqUserLoginField, int)` ← **注意要传 Context** |
-| 认证 | `ReqAuthenticate(CThostFtdcReqAuthenticateField, int)` |
-| 结算确认 | `ReqSettlementInfoConfirm(CThostFtdcSettlementInfoConfirmField, int)` |
-| 报单 | `ReqOrderInsert(CThostFtdcInputOrderField, int)` |
-| 撤单 | `ReqOrderAction(CThostFtdcInputOrderActionField, int)` |
-| 常量来源 | `thosttradeapi.*`，其值在类加载时由 `thosttradeapiJNI.*_get()` 从 `.so` 注入 |
-| 架构支持 | armeabi / armeabi-v7a / arm64-v8a / x86 / x86_64 |
-| 采集模块 | 已内含在 `TradeApi` 的 aar 中（`libclientencode.so`），登录时需系统权限 |
+| 连接/登录 | 前置地址（支持多个，自动切换）、BrokerID、账号密码、AuthCode、AppID、生产/评测切换、INI 配置读写 |
+| 交易 | 合约、买卖、开平（开仓/平仓/平今/平昨）、限价、数量、下单、撤单、结算单确认 |
+| 查询 | 资金、持仓、委托、成交 |
+| 日志 | 所有回调按行滚动，`[SYS]` `[ERR]` `[ORDER]` `[TRADE]` `[ACCT]` `[POS]` 前缀分类 |
 
-### 你给的参数 → CTP 字段映射
+## 环境要求
 
-| 你提供 | 落到哪个字段 | 本工程位置 |
-|---|---|---|
-| `tcp://<交易前置地址>:41305` | `RegisterFront()` | 「交易前置」输入框 |
-| `tcp://<行情前置地址>:41313` | 行情 `MdApi` 专用 | 本客户端只用 TraderApi，未使用（见第五节） |
-| `BrokerID=<经纪商代码>` | `ReqUserLoginField.BrokerID` / `ReqAuthenticateField.BrokerID` | 「BrokerID」 |
-| `UserID=<资金账号>` | `ReqUserLoginField.UserID` | 「UserID」 |
-| `Password=<交易密码>` | `ReqUserLoginField.Password` | 「Password」（密码框） |
-| `InvestorID=<投资者账号>` | 结算确认 / 报单 / 查询的 `InvestorID` | 「InvestorID」 |
-| `UserProductInfo=<产品信息>` | `ReqUserLoginField.UserProductInfo`、`ReqAuthenticateField.UserProductInfo` | 「UserProductInfo」 |
-| `AuthCode=<授权码>` | `ReqAuthenticateField.AuthCode` | 「AuthCode」 |
-| `AppID=<AppID>` | `ReqAuthenticateField.AppID` | 「AppID」 |
+- RAD Studio 11.3（Delphi，FMX 框架）
+- Android SDK + NDK（随 RAD Studio 安装）
+- JDK 17（只在重新编译 Java 桥接层时需要）
+- CTP SDK 6.7.13 Android 版（需自行下载，不随仓库分发）
 
-> 交易前置是生产地址，**`production` 参数必须为 true**（界面「生产环境」勾选框默认已勾选）。
+## 快速开始
 
----
+### 1. 获取 CTP SDK
 
-## 三、目录结构
+从 SimNow 下载 `TraderapiMduserapi_6.7.13_Android.zip`（34,259,304 字节，MD5 `a0a4d2cdbd12e21938d6ce09ec54b2c6`），解包后把以下内容放进本项目的 `libs/`：
 
 ```
-delphi-ctp-app/
-├─ README.md                      ← 本文件
-├─ ctp.ini.sample                 ← 登录配置样例，拷到手机改名为 ctp.ini 即可
-├─ delphi/
-│  ├─ CtpApp.dpr                  工程文件（替换 IDE 自动生成的同名文件）
-│  ├─ MainUnit.pas                主窗体：界面 + 交互 + 300ms 事件轮询
-│  └─ Androidapi.JNI.CtpBridge.pas  Java 桥接类的 Delphi 导入单元
-├─ java/
-│  ├─ src/com/dctp/bridge/CtpBridge.java   CTP 逻辑全部在这里（已编译验证）
-│  ├─ stub/android/content/Context.java    仅编译期占位，不打包
-│  ├─ build.sh                    一键重新编译 jar
-│  └─ CtpBridge.jar               已编译好的桥接包（1.5MB, 内含 kotlin-stdlib）
-└─ libs/
-   ├─ classes.jar                 CTP 官方 Java SDK（来自 aar）
-   ├─ arm64-v8a/                  libthosttraderapi.so / _wrap.so / libclientencode.so
-   └─ armeabi-v7a/                同上（32 位备用）
+libs/
+├─ classes.jar                    ← 来自 aar 的 classes.jar
+├─ arm64-v8a/
+│   ├─ libthosttraderapi.so
+│   ├─ libthosttraderapi_wrap.so
+│   └─ libclientencode.so
+└─ armeabi-v7a/                   ← 可选，出 32 位包才需要
 ```
 
----
+> `libs/` 因版权原因被 `.gitignore` 排除，必须自己准备。
 
-## 四、在 RAD Studio 11.3 里的操作步骤
+### 2. 编译 Java 桥接层
 
-### 1. 新建工程
-`File > New > Multi-Device Application > Blank Application`，
-保存为 `CtpApp`（目录建议就放在本工程的 `delphi/`），平台勾选 **Android 64-bit**。
+```bash
+cd java
+./build.sh          # 依赖 javac 17 与 libs/classes.jar
+# 产出 CtpBridge.jar（已内置 kotlin-stdlib）
+```
 
-### 2. 替换/加入源文件
-- 把 `delphi/CtpApp.dpr` 覆盖 IDE 生成的 `CtpApp.dpr`（或把原先的窗体单元从 uses 里删掉、改成 `MainUnit`）。
-- `Project > Add to Project` 加入：
-  - `MainUnit.pas`
-  - `Androidapi.JNI.CtpBridge.pas`
+不想自己编译的话，用 `java/src/com/dctp/bridge/CtpBridge.java` 自行编译亦可。
 
-> 本次加入了 INI 配置，`MainUnit.pas` 与 `Androidapi.JNI.CtpBridge.pas` **两个文件都要换新版**
-> （后者新增了 `iniPath` / `loadIni` / `startFromIni` / `getConfig` 四个方法，缺了会报找不到成员）。
+### 3. 在 RAD Studio 里打开
 
-### 3. 部署 Java 库（关键）
-把下面**两个** jar 加入工程（Project Manager 里右键 `Android 64-bit Platform` → `Add`，选 `*.jar`）：
+用 `ctpapp.dproj` 打开工程，平台选 **Android 64-bit**。然后必须做三件事：
 
-- `libs/classes.jar` —— CTP 官方 SDK
-- `java/CtpBridge.jar` —— 桥接层，**已内置 kotlin-stdlib**，不需要再单独加 kotlin
+**a. 引入两个 jar**（Project Manager → Android 64-bit Platform → Add）
 
-RAD Studio 会在打包时用 d8 把它们合并进 `classes.dex`，无需你手动 dex。
-（如果 IDE 未自动处理，见本节末尾的「兜底做法」。）
+- `libs/classes.jar`（CTP 官方 SDK）
+- `java/CtpBridge.jar`（桥接层，已内置 kotlin-stdlib，**不要再单独加 kotlin**）
 
-> 为什么必须带 kotlin-stdlib：SDK 的看穿式信息采集模块 `com/sfit/ctp/info/*` 是 Kotlin 写的，
-> `ReqUserLogin(Context,…)` 会调它。缺了 stdlib 就会在登录那一步抛
-> `NoClassDefFoundError: Failed resolution of: Lkotlin/jvm/internal/Intrinsics;`。
-> aar 本身不带 stdlib（它靠 Gradle 的 POM 依赖拉取），所以我们把它并进了 `CtpBridge.jar`。
-> 版本选 1.6.21：仍保留 SDK 用到的老 API `checkParameterIsNotNull` / `checkExpressionValueIsNotNull`，
-> 且字节码为 Java 6 级（major 50），d8 无需脱糖。
-
-### 4. 部署 .so（关键）
-`Project > Deployment`，添加：
+**b. 部署三个 .so**（Project → Deployment），远程路径必须是 `library\lib\arm64-v8a\`
 
 | 本地文件 | 远程路径 |
 |---|---|
@@ -119,224 +98,97 @@ RAD Studio 会在打包时用 d8 把它们合并进 `classes.dex`，无需你手
 | `libs/arm64-v8a/libthosttraderapi_wrap.so` | `library\lib\arm64-v8a\` |
 | `libs/arm64-v8a/libclientencode.so` | `library\lib\arm64-v8a\` |
 
-（若要出 32 位包，把 `armeabi-v7a` 三个文件部署到 `library\lib\armeabi-v7a\`。）
+> 路径必须是 `library\lib\<abi>\`，写成 `lib\` 或默认的 `assets\internal\` 都会在运行时报 `UnsatisfiedLinkError`。
 
-> 远程路径必须是 `library\lib\<abi>\`，不是 `lib\`，也不是默认的 `assets\internal\`。
-> 只有 `library\lib\<abi>\` 才会被装进 APK 的原生库目录，`System.loadLibrary` 才找得到。
-> 平台条件要勾 **Android 64-bit**（出 32 位包时再加 **Android 32-bit** 那一组）。
+**c. 勾选权限**（Project → Options → Application → Uses Permissions）
 
-> 三个 .so 缺一不可：`_wrap` 是 JNI 胶水层（`swig_module_init` 就在里面），
-> `libclientencode` 是看穿式采集/加密模块。桥接层 `CtpBridge` 会在构造时按
-> `clientencode → thosttraderapi → thosttraderapi_wrap` 的顺序 `System.loadLibrary`。
+`INTERNET`、`ACCESS_NETWORK_STATE`、`ACCESS_WIFI_STATE`、`ACCESS_FINE_LOCATION`、`ACCESS_COARSE_LOCATION`、`READ_PHONE_STATE`
 
-### 5. 打开必要权限
-`Project > Options > Application > Uses Permissions`，勾选：
+> 后三个是 CTP 看穿式信息采集模块（`libclientencode.so`）要求的，缺了会在登录步骤失败。
 
-- `INTERNET`
-- `ACCESS_NETWORK_STATE`
-- `ACCESS_WIFI_STATE`
-- `ACCESS_FINE_LOCATION`、`ACCESS_COARSE_LOCATION`（采集模块要用）
-- `READ_PHONE_STATE`（采集模块要用）
+### 4. 配置登录参数
 
-代码里还会在启动时用 `PermissionsService` 申请这几个运行时权限（Android 6+ 必需）。
-
-### 6. 编译运行
-`Run > Run`（或 F9）。首次进「连接/登录」页参数已按你给的填好，直接点 **连接并登录**。
-
-### 7. 兜底做法（若 IDE 没有把 jar 变成 dex）
-用 Android SDK 的 d8 自己合并：
-
-```bash
-d8 --output ./dexout --lib <android.jar> classes.jar CtpBridge.jar
-# 产出 dexout/classes.dex，把它部署到 APK 根目录（远程路径 .\classes.dex）
-```
-
----
-
-## 五、登录/交易时序（代码已按此实现）
+把 `ctp.ini.sample` 拷到手机：
 
 ```
-start(front, flowPath, production=true, ...)
-  → CreateFtdcTraderApi(flowPath, true)
-  → RegisterSpi(spi)
-  → SubscribePrivateTopic / SubscribePublicTopic (THOST_TERT_QUICK)
-  → RegisterFront("tcp://<交易前置地址>:41305")
-  → Init()
-        ↓ 异步
-  OnFrontConnected
-  → ReqAuthenticate(AppID + AuthCode + UserProductInfo)     ← 有 AuthCode 必做
-  OnRspAuthenticate (ErrorID==0)
-  → ReqUserLogin(Context, BrokerID/UserID/Password)
-  OnRspUserLogin → 记录 FrontID / SessionID / MaxOrderRef / 交易日
-  → ReqSettlementInfoConfirm(InvestorID)                    ← 每日首笔交易前必须
-  OnRspSettlementInfoConfirm → 可以下单
+/sdcard/Android/data/com.embarcadero.ctpapp/files/ctp.ini
 ```
 
-下单：`ReqOrderInsert`，本工程固定用 **限价单**（`THOST_FTDC_OPT_LimitPrice`）、
-投机（`THOST_FTDC_HF_Speculation`）、当日有效（`THOST_FTDC_TC_GFD`）、
-立即触发（`THOST_FTDC_CC_Immediately`）。这些常量都是引用 SDK 符号，不硬编码字符。
+改成自己的账号信息即可，APP 首次运行也会在该位置自动生成一份同格式模板。
 
----
+### 5. 编译运行
 
-## 五之补、用 INI 配置登录（可注册多个前置）
+F9。进「连接/登录」页 → 点「连接并登录」。
 
-登录参数不再写死在界面里，默认走 `ctp.ini`。**先读配置，再 start**。
-
-### 文件位置
-
-按以下顺序查找，找不到就在第 2 处生成一份带注释的模板：
-
-| 顺序 | 路径 | 说明 |
-|---|---|---|
-| 1 | 界面上「配置文件」输入框填的路径 | 想放别处就填这里 |
-| 2 | `/sdcard/Android/data/com.embarcadero.ctpapp/files/ctp.ini` | **推荐**，手机文件管理器可直接编辑，不用重装 APP |
-| 3 | `/data/data/com.embarcadero.ctpapp/files/ctp.ini` | 应用私有目录（需 root 才能看） |
-
-工程里附了 `ctp.ini.sample`，可直接拷到手机第 2 个路径改名为 `ctp.ini`。
-注意：外部目录在卸载 APP 时会被一并删除。
-
-### 格式
+## 配置说明
 
 ```ini
 [Login]
 Front1 = tcp://<交易前置地址>:41305
-Front2 = tcp://<备用前置地址>:41305
-Front3 =
-
+Front2 =                                  ; 可填多个，按顺序尝试
 BrokerID = <经纪商代码>
 UserID = <资金账号>
 Password = <交易密码>
-InvestorID = <投资者账号>
+InvestorID = <投资者账号>                  ; 留空则取 UserID
 UserProductInfo = <客户端产品信息>
 AuthCode = <授权码>
 AppID = <AppID>
-Production = 1
-FlowPath =
+Production = 1                            ; 1 生产 / 0 评测
+FlowPath =                                ; 留空 = 应用私有目录/ctpflow
 ```
 
-规则（这几条都实测过）：
+几条实现上的细节：
 
-- 键名不区分大小写；`;` `#` 开头是注释；`[Section]` 会被忽略，所以整份文件放同一节也行
-- **多前置**：`Front1/Front2/Front3` 按数字顺序，或重复写 `Front=` 按出现顺序；也可一行里用 `;` 分隔
-- 值可写 `tcp://ip:port`，也可只写 `ip:port`，缺协议头会自动补
-- `InvestorID` 留空时自动取 `UserID`
-- `Production`：`1/true/yes/生产` 为生产环境，其余按评测
-- 兼容 UTF-8 BOM 与 Windows CRLF（用记事本改过也不会解析失败）
-- 日志里密码固定打成 `***`，不会明文落盘到日志页
+- 键名不区分大小写，`;` `#` 开头为注释，`[Section]` 会被忽略
+- 多前置：`Front1/Front2/Front3` 按数字顺序，或重复写 `Front=` 按出现顺序，也支持一行用 `;` 分隔
+- 值可写 `tcp://ip:port` 或仅 `ip:port`，缺协议头自动补
+- 兼容 UTF-8 BOM 与 Windows CRLF（记事本改过也能解析）
+- 日志里密码固定打成 `***`
 
-### 多前置是怎么生效的
-
-CTP 原生支持：在 `Init()` **之前**多次调用 `RegisterFront`，API 会按注册顺序依次尝试，
-前一个不可达就换下一个，无需自己写重连池。代码里就是把配置里的地址循环注册一遍：
-
-```java
-for (String f : fronts) api.RegisterFront(f);
-api.Init();
-```
-
-日志会打印 `前置 #1 = ...`、`前置 #2 = ...`，失败时按地址分别提示 `[NET]` 探测结果。
-注意这是**连接级**容错：连上之后如果该前置中途断线，CTP 会自己重连同一个前置；
-要换到另一个前置，仍需重新 `Release` 后 `start`（界面「连接并登录」即可）。
-
-### 界面上的开关
-
-- 「**从 INI 读取登录参数**」默认勾选 → 点「连接并登录」时自动读 INI 再 start
-- 取消勾选 → 使用界面上手动填的参数（此时「交易前置」框支持 `;` 分隔多个地址）
-- 「**读取 INI 并回填**」→ 只读配置并填进输入框，方便核对，不会发起连接
-
----
-
-## 六、界面说明
-
-四个页签：
-
-- **连接/登录**：配置文件路径、INI 开关、读取回填按钮、前置（可多个）、流文件目录、
-  生产/评测开关、BrokerID、UserID、密码、InvestorID、产品信息、AppID、AuthCode；
-  两个按钮「连接并登录」「断开连接」。
-- **交易**：合约、买卖、开平（开仓/平仓/平今/平昨）、价格、数量、下单；结算单确认；按 OrderRef 撤单。
-- **查询**：资金、持仓、委托、成交。
-- **日志**：所有回调按行滚动，前缀区分类型
-  `[SYS]` 系统、`[ERR]` 错误、`[ORDER]` 委托回报、`[TRADE]` 成交回报、
-  `[ACCT]` 资金、`[POS]` 持仓、`[QORDER]`/`[QTRADE]` 查询结果。
-
-轮询用 `TTimer`（300ms）拉 `pollEvents()`，**不依赖从 CTP 原生线程回调 Delphi**，
-规避了 JNI 线程 attach / 全局引用管理这类最容易出错的地方。
-
----
-
-## 七、需要你确认 / 后续可做
-
-1. **行情**：`tcp://<行情前置地址>:41313` 属 `MdApi`，本客户端未接。需要行情（盘口/最新价）的话，我再加一个 `MdApi` 桥接类，用同一个模式（`MdApi_release_*.aar` 就在下载包里）。
-2. **下单确认弹窗**：目前靠日志红色提示，未做二次确认弹窗。生产环境建议加，我可以补。
-3. **双因素认证 / 动态口令**：SDK 6.7.13 支持 `ReqUserLoginWithOTP`、`OneTimePassword` 字段，若你的账户开了二次认证，需要再加一个输入框。
-4. **持仓/委托表格化**：现在是把回报写成文本行，够用但不好看；可改为 `TListView` 结构化展示。
-5. 若你的海通账户 `InvestorID` 与 `UserID` 不同（有些券商是分开的），界面里两个框分别改即可。
-
-> ⚠️ 这是**真实生产柜台**。第一次联调建议：先只做「连接 → 登录 → 查资金」，
-> 确认 `[ACCT]` 有回报后，再用 1 手最小合约试单。
-
----
-
-## 八、常见错误对照
-
-### `UnsatisfiedLinkError: No implementation found for void ...thosttradeapiJNI.swig_module_init()`
-
-这是**第一次接通时必定会遇到**的一条（v1 的桥接层漏了 `System.loadLibrary`，已修）。
-
-原因：`thosttradeapiJNI` 的 static 初始化块会调用 native 的 `swig_module_init()`，
-该符号在 `libthosttraderapi_wrap.so` 里。**没有任何 .so 被加载过**，JNI 找不到实现。
-
-现在 `CtpBridge` 构造时按顺序加载 `clientencode → thosttraderapi → thosttraderapi_wrap`。
-若仍失败，日志会直接打出：
+## 目录结构
 
 ```
-[SYS] 原生库加载失败: abi=aarch64 clientencode=FAIL[...] thosttraderapi=FAIL[...]
-  nativeLibraryDir=/data/app/.../lib/arm64-v8a [存在]
-  目录内容=[]
-  → 若目录里没有 libthosttraderapi_wrap.so, 说明 .so 未打进 APK ...
+.
+├─ README.md                       本文件
+├─ LICENSE                         MIT
+├─ ctp.ini.sample                  配置模板
+├─ ctpapp.dpr / .dproj             Delphi 工程
+├─ MainFmxU.pas / .fmx / .vlb      主窗体：界面 + 交互 + 事件轮询
+├─ MyShareUnit.pas                 公共定义
+├─ MyShareProcedure.pas            公共过程
+├─ u_Toast.pas                     Android Toast 封装
+├─ Androidapi.JNI.CtpBridge.pas    Java 桥接类的 Delphi 导入单元
+├─ AndroidManifest.template.xml    Android 清单模板
+├─ java/
+│  ├─ src/com/dctp/bridge/CtpBridge.java   ★ 核心桥接逻辑
+│  └─ build.sh                     重新编译 jar
+├─ libs/                           CTP SDK（需自行放置）
+└─ docs/开发笔记.md                 SDK 逆向细节、踩坑记录、错误对照
 ```
 
-- `目录内容=[]` 或没有 `libthosttraderapi_wrap.so` → 第 4 节的 Deployment 没配对，
-  远程路径必须是 `library\lib\arm64-v8a\`，且平台勾选 Android 64-bit。
-- 报 `is 32-bit instead of 64-bit` → 装了 32 位包却只部署了 arm64 的 .so（或反之），
-  把对应 ABI 的三个文件补齐。
-- 报 `library "libstdc++.so" not found` → 极少数深度定制 ROM 删了系统兼容库；
-  这三个 .so 的 `DT_NEEDED` 都含 `libstdc++.so`（bionic 的兼容 stub，正常机器都有）。
+## 常见问题
 
-### `E2029 '[' expected but '.' found`（编译期）
+运行时的 `UnsatisfiedLinkError`、`NoClassDefFoundError: kotlin/jvm/internal/Intrinsics`、`.so` 未打进 APK、dex 方法数超限等问题，都在 **[docs/开发笔记.md](docs/开发笔记.md)** 里逐条记录成因与解法。
 
-`TTabControl.Tabs` 是索引属性 `Tabs[Index]`，没有 `Count`；取数量用 `TabCount`。已修。
+最常遇到的一条：
 
-### `NoClassDefFoundError: Failed resolution of: Lkotlin/jvm/internal/Intrinsics;`
+> `No implementation found for void ...swig_module_init()`
+> `.so` 没进 APK。检查 Deployment 远程路径是否为 `library\lib\arm64-v8a\`，且平台勾选了 Android 64-bit。
 
-点登录时报这个，且前面已经看到 `终端认证成功`。原因：`ReqUserLogin(Context, field, id)` 会调用
-看穿式采集模块 `com/sfit/ctp/info/DeviceInfoManager`，**它是 Kotlin 编译的**，而 aar 不自带
-kotlin-stdlib（Android Studio 靠 POM 依赖自动拉，Delphi 不会）。
+## 参与贡献
 
-已修：`CtpBridge.jar` 内已合并 kotlin-stdlib 1.6.21（884 个类，jar 1.5MB）。
-替换 jar 即可，不需要额外部署 kotlin。
+Issue 和 PR 都欢迎。提交前请确认：
 
-- 若你想改成单独部署 stdlib，必须把 `CtpBridge.jar` 换回不含 kotlin 的版本，
-  **不要两份同时部署**，重复类会让 d8 直接报错。
-- 也不要升级到 Kotlin 2.x：SDK 用的是 `checkParameterIsNotNull` / `checkExpressionValueIsNotNull`
-  这两个 1.3/1.4 时代的老 API，新版 stdlib 未必保留。
+1. 没有提交任何真实账号、密码、AuthCode、服务器地址
+2. 没有提交 `libs/` 下的第三方 SDK 文件
+3. commit 信息用 `feat:` / `fix:` / `docs:` / `refactor:` 前缀
 
-### 关于 dex 方法数上限
+## 免责声明
 
-合并后总计 1422 个类、约 3.8 万个已声明方法，加上对 `java.*` / `android.*` 的外部引用，
-离单 dex 的 65536 上限还有余量。若你的 d8 仍报
-`Cannot fit requested classes in a single dex file`，说明外部引用比你项目里其他库加起来超了，
-需要开 multidex——那属于工程级配置，告诉我我再给方案。
+本项目仅用于技术学习与个人研究。期货交易具有高风险，使用本软件产生的任何交易结果、资金损失、数据错误，作者不承担任何责任。请遵守你所在地区法律法规及所属期货公司的相关规定。
 
----
+CTP SDK 的版权归上期技术（SimNow）所有，本项目不包含、也不再分发其二进制文件。
 
-## 附：API 包的来源与重新获取
+## 开源协议
 
-SimNow 的下载页有瑞数反爬 JS，纯 HTTP 抓取只会拿到挑战页，必须用真实浏览器点开。
-
-- 页面：`https://www.simnow.com.cn/static/apiDownload.action` → 左侧「期货期权」→ 顶部「Android」→ 版本 `v6.7.13`
-- 直链：`https://www.simnow.com.cn/DocumentDown/api_3/5_2_2/TraderapiMduserapi_6.7.13_Android.zip`
-- 大小 34,259,304 字节，MD5 `a0a4d2cdbd12e21938d6ce09ec54b2c6`
-- 包内：`TradeApi(...)/Java&Kotlin/TradeApi_release_v1.16-2026-05-06.aar`、`MdApi/MdApi_release_v1.16-2026-05-06.aar`
-
-本工程 `libs/` 里的 `.so` 与 `classes.jar` 都是从该 aar 解包出来的，未做任何修改。
+[MIT](LICENSE) © 2026 topview999
