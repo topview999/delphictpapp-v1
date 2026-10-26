@@ -1,0 +1,29 @@
+; ===== CTP 登录配置 (示例模板) =====
+; 把本文件复制到手机 /sdcard/Android/data/com.embarcadero.ctpapp/files/ctp.ini 后填写
+; 首次运行 APP 也会在该位置自动生成一份同样格式的模板, 直接改那份即可。
+;
+; 规则:
+;   - 键名不区分大小写
+;   - 以 ; 或 # 开头是注释, [Section] 会被忽略
+;   - 多个前置: 写 Front1 / Front2 / Front3 (按数字顺序), 或重复写 Front= (按出现顺序)
+;     CTP 会按注册顺序尝试, 前一个连不上会自动换下一个
+;   - 值可以是 tcp://ip:port, 也可以只写 ip:port (会自动补 tcp://)
+
+[Login]
+Front1 = tcp://<交易前置地址>:41305
+Front2 =
+Front3 =
+
+BrokerID = <经纪商代码, 如 9999>
+UserID = <资金账号>
+Password = <交易密码>
+InvestorID = <投资者账号, 与 UserID 相同时可留空>
+UserProductInfo = <客户端产品信息, 向期货公司索取>
+AuthCode = <授权码, 向期货公司索取>
+AppID = <AppID, 向期货公司索取>
+
+; 1 = 生产环境, 0 = 评测环境
+Production = 1
+
+; 流文件目录, 留空 = 应用私有目录/ctpflow
+FlowPath =

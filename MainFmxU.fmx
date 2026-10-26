@@ -1,0 +1,843 @@
+object MainFmx: TMainFmx
+  Left = 0
+  Top = 0
+  Caption = 'Form1'
+  ClientHeight = 647
+  ClientWidth = 982
+  FormFactor.Width = 320
+  FormFactor.Height = 480
+  FormFactor.Devices = [Desktop]
+  OnCreate = FormCreate
+  OnKeyUp = FormKeyUp
+  OnShow = FormShow
+  DesignerMasterStyle = 3
+  object tbc1: TTabControl
+    Align = Client
+    Size.Width = 982.000000000000000000
+    Size.Height = 647.000000000000000000
+    Size.PlatformDefault = False
+    TabHeight = 49.000000000000000000
+    TabIndex = 4
+    TabOrder = 1
+    TabPosition = Bottom
+    Sizes = (
+      982s
+      598s
+      982s
+      598s
+      982s
+      598s
+      982s
+      598s
+      982s
+      598s)
+    object tbtmLogin: TTabItem
+      CustomIcon = <
+        item
+        end>
+      IsSelected = False
+      Size.Width = 196.000000000000000000
+      Size.Height = 49.000000000000000000
+      Size.PlatformDefault = False
+      StyleLookup = ''
+      TabOrder = 0
+      Text = #30331#24405
+      ExplicitSize.cx = 118.000000000000000000
+      ExplicitSize.cy = 49.000000000000000000
+      object lyt45: TLayout
+        Align = Top
+        Size.Width = 982.000000000000000000
+        Size.Height = 174.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 31
+        object lyt41: TLayout
+          Align = Top
+          Position.Y = 41.000000000000000000
+          Size.Width = 982.000000000000000000
+          Size.Height = 41.000000000000000000
+          Size.PlatformDefault = False
+          TabOrder = 34
+          object edtusername: TEdit
+            Touch.InteractiveGestures = [LongTap, DoubleTap]
+            Align = Client
+            TabOrder = 15
+            KeyboardType = NumberPad
+            Text = '123456789'
+            Size.Width = 862.000000000000000000
+            Size.Height = 32.000000000000000000
+            Size.PlatformDefault = False
+          end
+          object lbl111: TLabel
+            Align = Left
+            Size.Width = 120.000000000000000000
+            Size.Height = 41.000000000000000000
+            Size.PlatformDefault = False
+            TextSettings.HorzAlign = Trailing
+            Text = #36134#21495' :'#12288
+            TabOrder = 0
+          end
+        end
+        object lyt411: TLayout
+          Align = Top
+          Size.Width = 982.000000000000000000
+          Size.Height = 41.000000000000000000
+          Size.PlatformDefault = False
+          TabOrder = 33
+          object lbl1111: TLabel
+            Align = Left
+            Size.Width = 120.000000000000000000
+            Size.Height = 41.000000000000000000
+            Size.PlatformDefault = False
+            TextSettings.HorzAlign = Trailing
+            Text = #37197#32622#21015#34920' :'#12288
+            TabOrder = 0
+          end
+          object cbbIniFLst: TComboBox
+            Align = Client
+            Size.Width = 862.000000000000000000
+            Size.Height = 32.000000000000000000
+            Size.PlatformDefault = False
+            TabOrder = 13
+          end
+        end
+        object lyt42: TLayout
+          Align = Top
+          Position.Y = 82.000000000000000000
+          Size.Width = 982.000000000000000000
+          Size.Height = 41.000000000000000000
+          Size.PlatformDefault = False
+          TabOrder = 32
+          object edtpassword: TEdit
+            Touch.InteractiveGestures = [LongTap, DoubleTap]
+            Align = Client
+            TabOrder = 15
+            KeyboardType = Alphabet
+            Password = True
+            Text = '123456'
+            ImeMode = imChineseClose
+            Size.Width = 862.000000000000000000
+            Size.Height = 32.000000000000000000
+            Size.PlatformDefault = False
+          end
+          object lbl112: TLabel
+            Align = Left
+            Size.Width = 120.000000000000000000
+            Size.Height = 41.000000000000000000
+            Size.PlatformDefault = False
+            TextSettings.HorzAlign = Trailing
+            Text = #23494#30721' :'#12288
+            TabOrder = 0
+          end
+        end
+        object btnLogin: TButton
+          Align = Top
+          Position.Y = 123.000000000000000000
+          Size.Width = 982.000000000000000000
+          Size.Height = 44.000000000000000000
+          Size.PlatformDefault = False
+          TabOrder = 0
+          Text = #30331#24405
+          OnClick = btnLoginClick
+        end
+      end
+      object mmo1: TMemo
+        Touch.InteractiveGestures = [Pan, LongTap, DoubleTap]
+        DataDetectorTypes = []
+        TextSettings.WordWrap = True
+        Align = Client
+        Size.Width = 982.000000000000000000
+        Size.Height = 424.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 0
+        Viewport.Width = 974.000000000000000000
+        Viewport.Height = 416.000000000000000000
+      end
+    end
+    object tbtmMarkData: TTabItem
+      CustomIcon = <
+        item
+        end>
+      IsSelected = False
+      Size.Width = 196.000000000000000000
+      Size.Height = 49.000000000000000000
+      Size.PlatformDefault = False
+      StyleLookup = ''
+      TabOrder = 0
+      Text = #34892#24773
+      ExplicitSize.cx = 84.000000000000000000
+      ExplicitSize.cy = 49.000000000000000000
+      object scrlbx1: TScrollBox
+        Align = Client
+        Size.Width = 982.000000000000000000
+        Size.Height = 548.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 25
+        Viewport.Width = 977.000000000000000000
+        Viewport.Height = 548.000000000000000000
+        object lv11: TListView
+          ItemAppearanceClassName = 'TDynamicAppearance'
+          ItemEditAppearanceClassName = 'TDynamicAppearance'
+          HeaderAppearanceClassName = 'TListHeaderObjects'
+          FooterAppearanceClassName = 'TListHeaderObjects'
+          Size.Width = 900.000000000000000000
+          Size.Height = 1500.000000000000000000
+          Size.PlatformDefault = False
+          TabOrder = 25
+          ItemAppearanceObjects.ItemObjects.ObjectsCollection = <
+            item
+              AppearanceObjectName = 'Text1'
+              AppearanceClassName = 'TTextObjectAppearance'
+              Appearance.Font.Family = 'Microsoft YaHei'
+              Appearance.Font.Size = 18.000000000000000000
+              Appearance.Font.StyleExt = {00070000000000000004000000}
+              Appearance.TextAlign = Leading
+              Appearance.TextColor = claSteelblue
+              Appearance.Width = 108.000000000000000000
+              Appearance.Height = 36.000000000000000000
+              Appearance.PlaceOffset.X = 8.000000000000000000
+              Appearance.PlaceOffset.Y = 5.000000000000000000
+            end
+            item
+              AppearanceObjectName = 'Text2'
+              AppearanceClassName = 'TTextObjectAppearance'
+              Appearance.Font.Family = 'Microsoft YaHei'
+              Appearance.Font.Size = 13.000000000000000000
+              Appearance.Font.StyleExt = {00070000000000000004000000}
+              Appearance.TextAlign = Leading
+              Appearance.TextColor = claBlack
+              Appearance.Width = 83.000000000000000000
+              Appearance.Height = 22.000000000000000000
+              Appearance.PlaceOffset.X = 124.000000000000000000
+              Appearance.PlaceOffset.Y = 3.000000000000000000
+            end
+            item
+              AppearanceObjectName = 'Text3'
+              AppearanceClassName = 'TTextObjectAppearance'
+              Appearance.Font.Size = 13.000000000000000000
+              Appearance.TextAlign = Leading
+              Appearance.TextColor = claDimgray
+              Appearance.Width = 90.000000000000000000
+              Appearance.Height = 18.000000000000000000
+              Appearance.PlaceOffset.X = 214.000000000000000000
+              Appearance.PlaceOffset.Y = 6.000000000000000000
+            end
+            item
+              AppearanceObjectName = 'Text4'
+              AppearanceClassName = 'TTextObjectAppearance'
+              Appearance.Font.Size = 13.000000000000000000
+              Appearance.TextAlign = Leading
+              Appearance.TextColor = claDimgray
+              Appearance.Width = 90.000000000000000000
+              Appearance.Height = 18.000000000000000000
+              Appearance.PlaceOffset.X = 308.000000000000000000
+              Appearance.PlaceOffset.Y = 6.000000000000000000
+            end
+            item
+              AppearanceObjectName = 'Text5'
+              AppearanceClassName = 'TTextObjectAppearance'
+              Appearance.Font.Size = 13.000000000000000000
+              Appearance.TextAlign = Leading
+              Appearance.TextColor = claDimgray
+              Appearance.Width = 58.000000000000000000
+              Appearance.Height = 18.000000000000000000
+              Appearance.PlaceOffset.X = 404.000000000000000000
+              Appearance.PlaceOffset.Y = 6.000000000000000000
+            end
+            item
+              AppearanceObjectName = 'Text6'
+              AppearanceClassName = 'TTextObjectAppearance'
+              Appearance.Font.Size = 13.000000000000000000
+              Appearance.TextAlign = Leading
+              Appearance.TextColor = claDimgray
+              Appearance.Width = 66.000000000000000000
+              Appearance.Height = 18.000000000000000000
+              Appearance.PlaceOffset.X = 471.000000000000000000
+              Appearance.PlaceOffset.Y = 6.000000000000000000
+            end
+            item
+              AppearanceObjectName = 'Text7'
+              AppearanceClassName = 'TTextObjectAppearance'
+              Appearance.Font.Size = 13.000000000000000000
+              Appearance.TextAlign = Leading
+              Appearance.TextColor = claDimgray
+              Appearance.Width = 86.000000000000000000
+              Appearance.Height = 18.000000000000000000
+              Appearance.PlaceOffset.X = 553.000000000000000000
+              Appearance.PlaceOffset.Y = 6.000000000000000000
+            end
+            item
+              AppearanceObjectName = 'TextButton3'
+              AppearanceClassName = 'TTextButtonObjectAppearance'
+              Appearance.Font.Family = 'Microsoft YaHei'
+              Appearance.Font.Size = 13.000000000000000000
+              Appearance.Font.StyleExt = {00070000000000000004000000}
+              Appearance.TextColor = claSteelblue
+              Appearance.Width = 74.000000000000000000
+              Appearance.Height = 28.000000000000000000
+              Appearance.PlaceOffset.X = 754.000000000000000000
+              Appearance.Text = #36864#35746
+            end
+            item
+              AppearanceObjectName = 'Text8'
+              AppearanceClassName = 'TTextObjectAppearance'
+              Appearance.Font.Size = 13.000000000000000000
+              Appearance.TextAlign = Leading
+              Appearance.TextColor = claDimgray
+              Appearance.Width = 90.000000000000000000
+              Appearance.Height = 18.000000000000000000
+              Appearance.PlaceOffset.X = 124.000000000000000000
+              Appearance.PlaceOffset.Y = 28.000000000000000000
+            end
+            item
+              AppearanceObjectName = 'Text9'
+              AppearanceClassName = 'TTextObjectAppearance'
+              Appearance.Font.Size = 13.000000000000000000
+              Appearance.TextAlign = Leading
+              Appearance.TextColor = claDimgray
+              Appearance.Width = 35.000000000000000000
+              Appearance.Height = 18.000000000000000000
+              Appearance.PlaceOffset.X = 219.000000000000000000
+              Appearance.PlaceOffset.Y = 28.000000000000000000
+            end
+            item
+              AppearanceObjectName = 'Text10'
+              AppearanceClassName = 'TTextObjectAppearance'
+              Appearance.Font.Size = 13.000000000000000000
+              Appearance.TextAlign = Leading
+              Appearance.TextColor = claDimgray
+              Appearance.Width = 90.000000000000000000
+              Appearance.Height = 18.000000000000000000
+              Appearance.PlaceOffset.X = 260.000000000000000000
+              Appearance.PlaceOffset.Y = 28.000000000000000000
+            end
+            item
+              AppearanceObjectName = 'Text11'
+              AppearanceClassName = 'TTextObjectAppearance'
+              Appearance.Font.Size = 13.000000000000000000
+              Appearance.TextAlign = Leading
+              Appearance.TextColor = claDimgray
+              Appearance.Width = 35.000000000000000000
+              Appearance.Height = 18.000000000000000000
+              Appearance.PlaceOffset.X = 355.000000000000000000
+              Appearance.PlaceOffset.Y = 28.000000000000000000
+            end
+            item
+              AppearanceObjectName = 'Text12'
+              AppearanceClassName = 'TTextObjectAppearance'
+              Appearance.Font.Size = 13.000000000000000000
+              Appearance.TextAlign = Leading
+              Appearance.TextColor = claDimgray
+              Appearance.Width = 85.000000000000000000
+              Appearance.Height = 18.000000000000000000
+              Appearance.PlaceOffset.X = 396.000000000000000000
+              Appearance.PlaceOffset.Y = 28.000000000000000000
+            end
+            item
+              AppearanceObjectName = 'Text13'
+              AppearanceClassName = 'TTextObjectAppearance'
+              Appearance.Font.Size = 13.000000000000000000
+              Appearance.TextAlign = Leading
+              Appearance.TextColor = claDimgray
+              Appearance.Width = 85.000000000000000000
+              Appearance.Height = 18.000000000000000000
+              Appearance.PlaceOffset.X = 486.000000000000000000
+              Appearance.PlaceOffset.Y = 28.000000000000000000
+            end
+            item
+              AppearanceObjectName = 'Text14'
+              AppearanceClassName = 'TTextObjectAppearance'
+              Appearance.Font.Size = 13.000000000000000000
+              Appearance.TextAlign = Leading
+              Appearance.TextColor = claDimgray
+              Appearance.Width = 85.000000000000000000
+              Appearance.Height = 18.000000000000000000
+              Appearance.PlaceOffset.X = 576.000000000000000000
+              Appearance.PlaceOffset.Y = 28.000000000000000000
+            end
+            item
+              AppearanceObjectName = 'Text15'
+              AppearanceClassName = 'TTextObjectAppearance'
+              Appearance.Font.Size = 13.000000000000000000
+              Appearance.TextAlign = Leading
+              Appearance.TextColor = claDimgray
+              Appearance.Width = 85.000000000000000000
+              Appearance.Height = 18.000000000000000000
+              Appearance.PlaceOffset.X = 666.000000000000000000
+              Appearance.PlaceOffset.Y = 28.000000000000000000
+            end
+            item
+              AppearanceObjectName = 'Text16'
+              AppearanceClassName = 'TTextObjectAppearance'
+              Appearance.Font.Size = 13.000000000000000000
+              Appearance.TextAlign = Leading
+              Appearance.TextColor = claDimgray
+              Appearance.Width = 85.000000000000000000
+              Appearance.Height = 18.000000000000000000
+              Appearance.PlaceOffset.X = 756.000000000000000000
+              Appearance.PlaceOffset.Y = 28.000000000000000000
+            end>
+          ItemAppearanceObjects.ItemEditObjects.ObjectsCollection = <
+            item
+              AppearanceObjectName = 'Text1'
+              AppearanceClassName = 'TTextObjectAppearance'
+              Appearance.Width = 169.000000000000000000
+              Appearance.Height = 25.000000000000000000
+              Appearance.PlaceOffset.X = 30.000000000000000000
+            end
+            item
+              AppearanceObjectName = 'Text2'
+              AppearanceClassName = 'TTextObjectAppearance'
+              Appearance.Width = 169.000000000000000000
+              Appearance.Height = 20.000000000000000000
+              Appearance.PlaceOffset.X = 30.000000000000000000
+              Appearance.PlaceOffset.Y = 24.000000000000000000
+            end
+            item
+              AppearanceObjectName = 'Text3'
+              AppearanceClassName = 'TTextObjectAppearance'
+              Appearance.Width = 153.000000000000000000
+              Appearance.Height = 25.000000000000000000
+              Appearance.PlaceOffset.X = 278.000000000000000000
+            end
+            item
+              AppearanceObjectName = 'Text4'
+              AppearanceClassName = 'TTextObjectAppearance'
+              Appearance.Width = 145.000000000000000000
+              Appearance.Height = 20.000000000000000000
+              Appearance.PlaceOffset.X = 286.000000000000000000
+              Appearance.PlaceOffset.Y = 24.000000000000000000
+            end
+            item
+              AppearanceObjectName = 'Text5'
+              AppearanceClassName = 'TTextObjectAppearance'
+              Appearance.Width = 153.000000000000000000
+              Appearance.Height = 25.000000000000000000
+              Appearance.PlaceOffset.X = 478.000000000000000000
+            end
+            item
+              AppearanceObjectName = 'Text6'
+              AppearanceClassName = 'TTextObjectAppearance'
+              Appearance.Width = 177.000000000000000000
+              Appearance.Height = 20.000000000000000000
+              Appearance.PlaceOffset.X = 478.000000000000000000
+              Appearance.PlaceOffset.Y = 24.000000000000000000
+            end>
+          ItemAppearanceObjects.HeaderObjects.Text.Width = 207.000000000000000000
+          ItemAppearanceObjects.HeaderObjects.Text.Height = 24.000000000000000000
+          ItemAppearanceObjects.FooterObjects.Text.Width = 721.000000000000000000
+          ItemAppearanceObjects.FooterObjects.Text.Height = 82.000000000000000000
+          ItemAppearanceObjects.FooterObjects.Text.PlaceOffset.X = -2.000000000000000000
+          ItemAppearanceObjects.FooterObjects.Text.PlaceOffset.Y = 24.000000000000000000
+          OnClick = lv11Click
+          CanSwipeDelete = False
+          OnChange = lv11Change
+          OnButtonClick = lv11ButtonClick
+          DeleteButtonText = ''
+          SearchVisible = True
+          object lbl5: TLabel
+            Position.X = 232.000000000000000000
+            Size.Width = 241.000000000000000000
+            Size.Height = 17.000000000000000000
+            Size.PlatformDefault = False
+            TabOrder = 0
+          end
+        end
+      end
+      object lyt7: TLayout
+        Align = Top
+        Size.Width = 982.000000000000000000
+        Size.Height = 50.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 26
+      end
+    end
+    object tbtmTrade: TTabItem
+      CustomIcon = <
+        item
+        end>
+      IsSelected = False
+      Size.Width = 196.000000000000000000
+      Size.Height = 49.000000000000000000
+      Size.PlatformDefault = False
+      StyleLookup = ''
+      TabOrder = 0
+      Text = #20132#26131
+      ExplicitSize.cx = 118.000000000000000000
+      ExplicitSize.cy = 49.000000000000000000
+    end
+    object tbtmReq: TTabItem
+      CustomIcon = <
+        item
+        end>
+      IsSelected = False
+      Size.Width = 196.000000000000000000
+      Size.Height = 49.000000000000000000
+      Size.PlatformDefault = False
+      StyleLookup = ''
+      TabOrder = 0
+      Text = #26597#35810
+      ExplicitSize.cx = 118.000000000000000000
+      ExplicitSize.cy = 49.000000000000000000
+      object btnqryTradingAccount: TButton
+        Position.X = 56.000000000000000000
+        Position.Y = 63.000000000000000000
+        Size.Width = 353.000000000000000000
+        Size.Height = 58.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 1
+        Text = #26597#35810#36134#25143#36164#37329
+        OnClick = btnqryTradingAccountClick
+      end
+      object btnqryInvestorPosition: TButton
+        Position.X = 56.000000000000000000
+        Position.Y = 129.000000000000000000
+        Size.Width = 353.000000000000000000
+        Size.Height = 58.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 0
+        Text = #26597#35810#25345#20179#21512#32422
+        OnClick = btnqryInvestorPositionClick
+      end
+    end
+    object tbtmIni: TTabItem
+      CustomIcon = <
+        item
+        end>
+      IsSelected = True
+      Size.Width = 198.000000000000000000
+      Size.Height = 49.000000000000000000
+      Size.PlatformDefault = False
+      StyleLookup = ''
+      TabOrder = 0
+      Text = #37197#32622#25991#20214
+      ExplicitSize.cx = 95.000000000000000000
+      ExplicitSize.cy = 49.000000000000000000
+      object lyt1: TLayout
+        Align = Top
+        Size.Width = 982.000000000000000000
+        Size.Height = 162.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 0
+        object lyt431: TLayout
+          Align = Bottom
+          Position.Y = 121.000000000000000000
+          Size.Width = 982.000000000000000000
+          Size.Height = 41.000000000000000000
+          Size.PlatformDefault = False
+          TabOrder = 33
+          object edtAuthCode: TEdit
+            Touch.InteractiveGestures = [LongTap, DoubleTap]
+            Align = Client
+            TabOrder = 16
+            KeyboardType = NumberPad
+            Text = 'AuthCode'
+            Size.Width = 862.000000000000000000
+            Size.Height = 32.000000000000000000
+            Size.PlatformDefault = False
+          end
+          object lbl1131: TLabel
+            Align = Left
+            Size.Width = 120.000000000000000000
+            Size.Height = 41.000000000000000000
+            Size.PlatformDefault = False
+            TextSettings.HorzAlign = Trailing
+            Text = 'AuthCode:'
+            TabOrder = 0
+          end
+        end
+        object lyt44: TLayout
+          Align = Top
+          Size.Width = 982.000000000000000000
+          Size.Height = 41.000000000000000000
+          Size.PlatformDefault = False
+          TabOrder = 34
+          object edtBrokerID: TEdit
+            Touch.InteractiveGestures = [LongTap, DoubleTap]
+            Align = Client
+            TabOrder = 16
+            KeyboardType = NumberPad
+            Text = 'BrokerID'
+            Size.Width = 862.000000000000000000
+            Size.Height = 32.000000000000000000
+            Size.PlatformDefault = False
+          end
+          object lbl114: TLabel
+            Align = Left
+            Size.Width = 120.000000000000000000
+            Size.Height = 41.000000000000000000
+            Size.PlatformDefault = False
+            TextSettings.HorzAlign = Trailing
+            Text = 'BrokerID:'
+            TabOrder = 0
+          end
+        end
+        object lyt2: TLayout
+          Align = Client
+          Size.Width = 982.000000000000000000
+          Size.Height = 80.000000000000000000
+          Size.PlatformDefault = False
+          TabOrder = 35
+          object lyt4: TLayout
+            Align = Top
+            Size.Width = 982.000000000000000000
+            Size.Height = 41.000000000000000000
+            Size.PlatformDefault = False
+            TabOrder = 34
+            object edtProduct: TEdit
+              Touch.InteractiveGestures = [LongTap, DoubleTap]
+              Align = Client
+              TabOrder = 15
+              KeyboardType = NumberPad
+              Text = 'Product'
+              Size.Width = 862.000000000000000000
+              Size.Height = 32.000000000000000000
+              Size.PlatformDefault = False
+            end
+            object lbl11: TLabel
+              Align = Left
+              Size.Width = 120.000000000000000000
+              Size.Height = 41.000000000000000000
+              Size.PlatformDefault = False
+              TextSettings.HorzAlign = Trailing
+              Text = 'ProductInfo:'
+              TabOrder = 0
+            end
+          end
+          object lyt43: TLayout
+            Align = Client
+            Size.Width = 982.000000000000000000
+            Size.Height = 39.000000000000000000
+            Size.PlatformDefault = False
+            TabOrder = 33
+            object edtAppID: TEdit
+              Touch.InteractiveGestures = [LongTap, DoubleTap]
+              Align = Client
+              TabOrder = 15
+              KeyboardType = NumberPad
+              Text = 'AppID'
+              Size.Width = 862.000000000000000000
+              Size.Height = 32.000000000000000000
+              Size.PlatformDefault = False
+            end
+            object lbl113: TLabel
+              Align = Left
+              Size.Width = 120.000000000000000000
+              Size.Height = 39.000000000000000000
+              Size.PlatformDefault = False
+              TextSettings.HorzAlign = Trailing
+              Text = 'AppID:'
+              TabOrder = 0
+            end
+          end
+        end
+      end
+      object lyt3: TLayout
+        Align = Top
+        Position.Y = 162.000000000000000000
+        Size.Width = 982.000000000000000000
+        Size.Height = 191.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 2
+        object lstTDFront: TListBox
+          Align = Client
+          Size.Width = 982.000000000000000000
+          Size.Height = 150.000000000000000000
+          Size.PlatformDefault = False
+          TabOrder = 0
+          OnClick = lstTDFrontClick
+          DisableFocusEffect = True
+          DefaultItemStyles.ItemStyle = ''
+          DefaultItemStyles.GroupHeaderStyle = ''
+          DefaultItemStyles.GroupFooterStyle = ''
+          Viewport.Width = 982.000000000000000000
+          Viewport.Height = 150.000000000000000000
+        end
+        object lyt441: TLayout
+          Align = Top
+          Size.Width = 982.000000000000000000
+          Size.Height = 41.000000000000000000
+          Size.PlatformDefault = False
+          TabOrder = 34
+          object edtTDFrontAddress: TEdit
+            Touch.InteractiveGestures = [LongTap, DoubleTap]
+            Align = Client
+            TabOrder = 15
+            KeyboardType = NumberPad
+            Text = '127.0.0.1'
+            Hint = #20132#26131#26381#21153#22120#22320#22336
+            Size.Width = 891.000000000000000000
+            Size.Height = 32.000000000000000000
+            Size.PlatformDefault = False
+            OnKeyUp = edtTDFrontAddressKeyUp
+          end
+          object btnTDFront: TButton
+            Align = Right
+            Position.X = 891.000000000000000000
+            Size.Width = 91.000000000000000000
+            Size.Height = 41.000000000000000000
+            Size.PlatformDefault = False
+            TabOrder = 16
+            Text = #28155#21152
+            OnClick = btnTDFrontClick
+          end
+        end
+      end
+      object lyt: TLayout
+        Align = Top
+        Position.Y = 353.000000000000000000
+        Size.Width = 982.000000000000000000
+        Size.Height = 191.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 1
+        object lstMDFront: TListBox
+          Align = Client
+          Size.Width = 982.000000000000000000
+          Size.Height = 150.000000000000000000
+          Size.PlatformDefault = False
+          TabOrder = 0
+          OnClick = lstMDFrontClick
+          DisableFocusEffect = True
+          DefaultItemStyles.ItemStyle = ''
+          DefaultItemStyles.GroupHeaderStyle = ''
+          DefaultItemStyles.GroupFooterStyle = ''
+          Viewport.Width = 982.000000000000000000
+          Viewport.Height = 150.000000000000000000
+        end
+        object lyt5: TLayout
+          Align = Top
+          Size.Width = 982.000000000000000000
+          Size.Height = 41.000000000000000000
+          Size.PlatformDefault = False
+          TabOrder = 34
+          object edtMDFrontAddress: TEdit
+            Touch.InteractiveGestures = [LongTap, DoubleTap]
+            Align = Client
+            TabOrder = 15
+            KeyboardType = NumberPad
+            Text = '127.0.0.1'
+            Hint = #34892#24773#26381#21153#22120#22320#22336
+            Size.Width = 891.000000000000000000
+            Size.Height = 32.000000000000000000
+            Size.PlatformDefault = False
+            OnKeyUp = edtMDFrontAddressKeyUp
+          end
+          object btnMDFront: TButton
+            Align = Right
+            Position.X = 891.000000000000000000
+            Size.Width = 91.000000000000000000
+            Size.Height = 41.000000000000000000
+            Size.PlatformDefault = False
+            TabOrder = 16
+            Text = #28155#21152
+            OnClick = btnMDFrontClick
+          end
+        end
+      end
+      object lyt6: TLayout
+        Align = Top
+        Position.Y = 544.000000000000000000
+        Size.Width = 982.000000000000000000
+        Size.Height = 50.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 3
+        object btn1: TButton
+          Align = Left
+          Position.X = 257.000000000000000000
+          Size.Width = 150.000000000000000000
+          Size.Height = 50.000000000000000000
+          Size.PlatformDefault = False
+          TabOrder = 0
+          Text = #20445#23384#37197#32622
+          OnClick = btn1Click
+        end
+        object cbbIniFLst2: TComboBox
+          Align = Left
+          Position.Y = 9.000000000000000000
+          Size.Width = 257.000000000000000000
+          Size.Height = 32.000000000000000000
+          Size.PlatformDefault = False
+          TabOrder = 1
+        end
+      end
+      object RectMask: TRectangle
+        Fill.Color = claDarkgray
+        Position.X = 210.000000000000000000
+        Position.Y = 120.000000000000000000
+        Size.Width = 320.000000000000000000
+        Size.Height = 200.000000000000000000
+        Size.PlatformDefault = False
+        object LayoutDialog: TLayout
+          Align = Center
+          Size.Width = 320.000000000000000000
+          Size.Height = 200.000000000000000000
+          Size.PlatformDefault = False
+          TabOrder = 0
+          object RectBg: TRectangle
+            Align = Client
+            Fill.Color = claWhite
+            Size.Width = 320.000000000000000000
+            Size.Height = 95.000000000000000000
+            Size.PlatformDefault = False
+          end
+          object LabelTitle: TLabel
+            Align = Top
+            Size.Width = 320.000000000000000000
+            Size.Height = 23.000000000000000000
+            Size.PlatformDefault = False
+            Text = #37197#32622#21517
+            TabOrder = 1
+          end
+          object EditInput: TEdit
+            Touch.InteractiveGestures = [LongTap, DoubleTap]
+            Align = Top
+            TabOrder = 2
+            Position.Y = 23.000000000000000000
+            Size.Width = 320.000000000000000000
+            Size.Height = 32.000000000000000000
+            Size.PlatformDefault = False
+          end
+          object LayoutButtons: TLayout
+            Align = Bottom
+            Position.Y = 150.000000000000000000
+            Size.Width = 320.000000000000000000
+            Size.Height = 50.000000000000000000
+            Size.PlatformDefault = False
+            TabOrder = 3
+            object BtnCancel: TButton
+              Align = Left
+              Size.Width = 97.000000000000000000
+              Size.Height = 50.000000000000000000
+              Size.PlatformDefault = False
+              TabOrder = 0
+              Text = #21462#28040
+              OnClick = BtnCancelClick
+            end
+            object BtnOk: TButton
+              Align = Left
+              Position.X = 97.000000000000000000
+              Size.Width = 96.000000000000000000
+              Size.Height = 50.000000000000000000
+              Size.PlatformDefault = False
+              TabOrder = 1
+              Text = #20445#23384
+              OnClick = BtnOkClick
+            end
+          end
+        end
+      end
+    end
+  end
+  object tmr1: TTimer
+    OnTimer = tmr1Timer
+    Left = 184
+    Top = 400
+  end
+  object con1: TFDConnection
+    Params.Strings = (
+      'DriverID=SQLite')
+    LoginPrompt = False
+    AfterConnect = con1AfterConnect
+    Left = 264
+    Top = 400
+  end
+end

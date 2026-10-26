@@ -1,0 +1,31 @@
+java/
+libs/
+Android64/
+Win64/
+Win32/
+
+# Delphi 编译产物
+__history/
+__recovery/
+*.dcu
+*.dcpil
+*.exe
+*.dll
+*.apk
+*.aab
+*.so
+*.dex
+*.deploy
+*.log
+
+# IDE 本地配置与缓存（因人而异，不应共享）
+*.identcache
+*.dproj.local
+*.dsk
+*.stat
+
+# 备份文件
+*.bak
+
+# 真实登录配置（含账号密码，绝不入库；示例见 ctp.ini.sample）
+ctp.ini
