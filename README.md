@@ -1,9 +1,9 @@
-# CTP 安卓交易客户端（Delphi FMX）
+# CTP 安卓、华为鸿蒙交易客户端（Delphi FMX）
 
 用 Delphi 11.3 / FireMonkey 写的上期技术 CTP 期货交易客户端，直连生产柜台，支持登录、下单、撤单、资金持仓查询。
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-![Platform](https://img.shields.io/badge/Platform-Android%2064--bit-green)
+![Platform](https://img.shields.io/badge/Platform-Android%2064--bit%20%7C%20HarmonyOS-green)
 ![Delphi](https://img.shields.io/badge/Delphi-11.3%20FMX-red)
 
 > ⚠️ **风险提示**：本项目连接的是**真实交易柜台**，下单即产生真实资金委托。
@@ -52,6 +52,7 @@ Delphi 无法继承 Java 类，所以不能走"Delphi 直接调 C++ 头文件"�
 - Android SDK + NDK（随 RAD Studio 安装）
 - JDK 17（只在重新编译 Java 桥接层时需要）
 - CTP SDK 6.7.13 Android 版（仓库已内置）
+- 运行环境：Android 6.0+；**华为鸿蒙（HarmonyOS，支持安装 APK 的版本）已实机验证运行正常**
 
 ## 快速开始
 
