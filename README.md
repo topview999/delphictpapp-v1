@@ -5,11 +5,29 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 ![Platform](https://img.shields.io/badge/Platform-Android%2064--bit%20%7C%20HarmonyOS-green)
 ![Delphi](https://img.shields.io/badge/Delphi-11.3%20FMX-red)
+[![Release](https://img.shields.io/github/v/release/topview999/delphictpapp-v1?label=下载%20APK)](https://github.com/topview999/delphictpapp-v1/releases/latest)
 
 > ⚠️ **风险提示**：本项目连接的是**真实交易柜台**，下单即产生真实资金委托。
 > 请先在评测环境（SimNow）验证，或仅用最小手数试单。作者不对任何交易损失负责。
 >
 > 🔒 **切勿提交真实账号密码**。仓库内所有凭证均为占位符，真实配置放 `ctp.ini`（已被 `.gitignore` 排除）。
+
+---
+
+## 下载安装
+
+不想自己编译的话，直接下现成的 APK：
+
+**https://github.com/topview999/delphictpapp-v1/releases/latest**
+
+| 项目 | 说明 |
+|---|---|
+| 架构 | arm64-v8a（64 位），不支持 32 位老设备 |
+| 系统 | Android 6.0+（minSdk 23），华为鸿蒙可安装 APK 的版本已实机验证 |
+| 大小 | 约 20 MB |
+| 安装 | 允许"未知来源应用"后直接安装；首次运行需授予网络与存储权限 |
+
+安装后把 `ctp.ini` 放到 `/sdcard/Android/data/com.embarcadero.ctpapp/files/`（首次启动会自动生成模板），填好经纪商代码、账号、密码、前置地址即可登录。
 
 ---
 
