@@ -17,7 +17,7 @@ object MainFmx: TMainFmx
     Size.Height = 647.000000000000000000
     Size.PlatformDefault = False
     TabHeight = 49.000000000000000000
-    TabIndex = 4
+    TabIndex = 0
     TabOrder = 1
     TabPosition = Bottom
     Sizes = (
@@ -35,7 +35,7 @@ object MainFmx: TMainFmx
       CustomIcon = <
         item
         end>
-      IsSelected = False
+      IsSelected = True
       Size.Width = 196.000000000000000000
       Size.Height = 49.000000000000000000
       Size.PlatformDefault = False
@@ -503,7 +503,7 @@ object MainFmx: TMainFmx
       CustomIcon = <
         item
         end>
-      IsSelected = True
+      IsSelected = False
       Size.Width = 198.000000000000000000
       Size.Height = 49.000000000000000000
       Size.PlatformDefault = False
