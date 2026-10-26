@@ -120,6 +120,7 @@ type
     FQuoteInstrs: TStringList; // 与 lv11.Items 平行: 每行对应的合约代码
     FMdStarted: Boolean;       // 本次交易登录后是否已启动行情
     FMdUIBuilt: Boolean;       // 行情页顶部控件是否已创建
+    FLastStatus: string;       // 上一次已写入日志的连接状态(仅变化时记录, 避免刷屏)
     edtMdInstr: TEdit;         // 行情页合约输入框(代码创建)
     function Ctp: JCtpBridge;
     procedure RequestAndroidPermissions;
@@ -998,31 +999,32 @@ var
   Txt: string;
 begin
   if FCtp = nil then
-    begin
-      Txt := '未连接';
-    end
+    Txt := '未连接'
   else
-    begin
-      try
-        if FCtp.isLoggedIn then
-          Txt := '已登录  交易日 ' + JStringToString(FCtp.getTradingDay)
-            + '  FrontID=' + IntToStr(FCtp.getFrontId)
-            + '  SessionID=' + IntToStr(FCtp.getSessionId)
-        else if FCtp.isConnected then
-          Txt := '前置已连接, 正在登录...'
-        else
-          Txt := '未连接';
-        AddLog(Txt);
-      except
-        Txt := '状态未知';
-      end;
+    try
+      if FCtp.isLoggedIn then
+        Txt := '已登录  交易日 ' + JStringToString(FCtp.getTradingDay)
+          + '  FrontID=' + IntToStr(FCtp.getFrontId)
+          + '  SessionID=' + IntToStr(FCtp.getSessionId)
+      else if FCtp.isConnected then
+        Txt := '前置已连接, 正在登录...'
+      else
+        Txt := '未连接';
+    except
+      Txt := '状态未知';
     end;
-
+  // 定时器每 tick 都会调到这里, 状态没变就不再写日志, 否则日志页会被"未连接"刷满
+  if Txt <> FLastStatus then
+  begin
+    FLastStatus := Txt;
+    AddLog(Txt);
+  end;
 end;
 procedure TMainFmx.tmr1Timer(Sender: TObject);
 var
   Arr: TJavaObjectArray<JString>;
   I: Integer;
+  LastMsg: string;
 begin
   // 启动后首个 tick 扫描一次应用目录下的 ini, 填充 cbbIniFLst
   if not FIniFilled then
@@ -1041,9 +1043,18 @@ begin
     Arr := FCtp.pollEvents;
     if (Arr <> nil) and (Arr.Length > 0) then
     begin
+      LastMsg := '';
       for I := 0 to Arr.Length - 1 do
-        HandleEvent(JStringToString(Arr[I]));
-      if not JStringToString(Arr[I]).StartsWith('MDQ|', True) then UpdateStatus;
+      begin
+        LastMsg := JStringToString(Arr[I]);
+        HandleEvent(LastMsg);
+      end;
+      // 注意: 循环结束后 I 已经等于 Arr.Length, 再取 Arr[I] 会越界。
+      // JNI 的 GetObjectArrayElement 越界会抛 ArrayIndexOutOfBoundsException,
+      // Delphi 不会清除该 pending 异常, 下一次调用 isLoggedIn 时 ART 直接 abort。
+      // 这里改用循环里缓存的最后一条消息, 不再二次访问数组。
+      if (LastMsg <> '') and not LastMsg.StartsWith('MDQ|', True) then
+        UpdateStatus;
     end;
   except
     // 轮询期间忽略异常, 避免定时器中断
