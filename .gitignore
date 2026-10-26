@@ -1,12 +1,6 @@
-# ---- 第三方 CTP SDK（版权归上期技术 SimNow，本项目不再分发）----
-# 保留一份说明文件，告知使用者如何自行获取
-libs/*
-!libs/README.md
-
-# ---- Java 桥接层：源码入库，编译产物不入库 ----
+# ---- Java 桥接层：源码 + 预编译 jar 入库，中间产物不入库 ----
 java/out/
 java/stubout/
-java/*.jar
 *.class
 
 # ---- Delphi 编译产物 ----
@@ -18,7 +12,6 @@ __recovery/
 *.dll
 *.apk
 *.aab
-*.so
 *.dex
 *.deploy
 *.log
