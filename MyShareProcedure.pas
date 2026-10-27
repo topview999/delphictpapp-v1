@@ -10,8 +10,8 @@ type
   TInputResultProc = reference to procedure(const AResult: TModalResult;const AValue: string);// System.UITypes
 
 procedure CloseDialog(mmo1:tmemo;EditInput:TEdit;AResult: TModalResult;FCallback: TInputResultProc;RectMask: TRectangle);
-procedure ShowInputDialog(const ATitle, ADefault: string;
-  ACallback: TInputResultProc;var FCallback: TInputResultProc;LabelTitle:tlabel;EditInput:TEdit;RectMask: TRectangle);
+procedure ShowInputDialog(const ATitle, ADefault: string;ACallback: TInputResultProc;var FCallback: TInputResultProc;
+  LabelTitle:tlabel;EditInput:TEdit;RectMask: TRectangle;DelFlag:Integer);
 procedure AddLog(mmo1:tmemo;const AText: string;showited:Boolean); overload;
 
 implementation
@@ -34,7 +34,6 @@ begin
   LValue := EditInput.Text;
   LCallback := FCallback;
   FCallback := nil;
-
   RectMask.Visible := False;
   EditInput.SetFocus; // 先移走焦点，避免软键盘残留
   if Assigned(LCallback) then
@@ -46,12 +45,15 @@ begin
       AddLog(mmo1,'未能保存，回调为空！',True);
     end;
 end;
-procedure ShowInputDialog(const ATitle, ADefault: string;
-  ACallback: TInputResultProc;var FCallback: TInputResultProc;LabelTitle:tlabel;EditInput:TEdit;RectMask: TRectangle);
+procedure ShowInputDialog(const ATitle, ADefault: string;ACallback: TInputResultProc;var FCallback: TInputResultProc;
+  LabelTitle:tlabel;EditInput:TEdit;RectMask: TRectangle;DelFlag:Integer);
 begin
   FCallback := ACallback;
   LabelTitle.Text := ATitle;
   EditInput.Text := ADefault;
+  if DelFlag=1 then  EditInput.ReadOnly := true
+  else  EditInput.ReadOnly := False;
+
   //LabelHint.Text := '';
   RectMask.Position.Y := 100 ;
   RectMask.Position.x := 30 ;

@@ -82,9 +82,6 @@ Coordinates=706,608,42,36
 [lyt6]
 Coordinates=656,608,40,36
 
-[btnLogin]
-Coordinates=97,608,64,58
-
 [tmr1]
 Coordinates=698,166,40,36
 
@@ -143,6 +140,6 @@ Coordinates=309,540,42,58
 Coordinates=511,540,56,58
 
 []
-Coordinates=10,10,107,520
+Coordinates=97,608,64,58
 Visible=True
 

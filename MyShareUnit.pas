@@ -1,4 +1,4 @@
-unit MyShareUnit;
+﻿unit MyShareUnit;
 
 interface
 
@@ -25,6 +25,7 @@ end;
 var
   backi:Integer =0 ;
   dbFileName :string ;
+  HYLstFileName :string ;
   LvItemBeDeleteIndex:Integer = -1 ;
 implementation
 

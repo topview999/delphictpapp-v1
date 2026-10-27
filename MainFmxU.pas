@@ -21,7 +21,6 @@ type
     tbtmLogin: TTabItem;
     tbtmTrade: TTabItem;
     tbtmReq: TTabItem;
-    btnLogin: TButton;
     tbtmIni: TTabItem;
     mmo1: TMemo;
     btnqryTradingAccount: TButton;
@@ -77,7 +76,12 @@ type
     con1: TFDConnection;
     scrlbx1: TScrollBox;
     lyt7: TLayout;
-    procedure btnLoginClick(Sender: TObject);
+    lyt8: TLayout;
+    btnLogin: TButton;
+    lbl62: TLabel;
+    img31: TImage;
+    lyt9: TLayout;
+    lyt10: TLayout;
     procedure tmr1Timer(Sender: TObject);
     procedure UpdateStatus;
     procedure btnqryTradingAccountClick(Sender: TObject);
@@ -102,6 +106,9 @@ type
     procedure lv11Change(Sender: TObject);               // 保存配置: 参数控件 -> ini 文件
     procedure lv11ButtonClick(const Sender: TObject; const AItem: TListItem;
       const AObject: TListItemSimpleControl);
+    procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
+    procedure btnLoginClick(Sender: TObject);
+    procedure edtBrokerIDChange(Sender: TObject);
             // item 上「退订」按钮: 退订并删行 此方法默认添加在 private区 APP闪崩 移到 public区正常
       {CreateForm 阶段流式加载 .fmx 时，遇到 OnClick = btn1Click，运行时会去窗体类的 published 方法表里按名字查找这个方法。而 Delphi 规定：
         TForm 子类声明中，写在 private/public 关键字之前的“默认区”成员 → 自动 published，有 RTTI，能被 fmx 按名找到；
@@ -131,6 +138,7 @@ type
     procedure SyncIniCombo(Sender: TObject);            // 任一下拉框变化: 联动另一个并回填参数控件
     procedure ApplyCfgToControls(ACfgId: Integer);      // 按 id 读库(含前置地址表)回填参数控件
     procedure DoSaveCfg(const AName: string);           // AsyncInputQuery 回调后真正写数据库
+    procedure DoDelCfg(const AName: string);
     function BuildLoginIni: string;                     // 用当前控件参数在私有目录生成登录 ini, 返回全路径
     procedure DeleteLoginIni;                           // 登录完成后删除私有目录的临时登录 ini
     // ---- 行情页 ----
@@ -185,6 +193,7 @@ begin
       btnTDFront.Text := '';
       btnTDFront.Text := '添加' ;
     end;
+  btn1.Text := '保存配置';
 end;
 procedure TMainFmx.btnqryInvestorPositionClick(Sender: TObject);
 begin
@@ -193,46 +202,6 @@ begin
   except
     on E: Exception do
       AddLog('[UI] 查询持仓异常: ' + E.Message);
-  end;
-end;
-procedure TMainFmx.btnLoginClick(Sender: TObject);
-var
-  FlowPath, IniPath: string;
-begin
-  try
-    // 1) 用当前界面参数(选中配置回填或手工修改后的值)在私有目录生成登录 ini
-    IniPath := BuildLoginIni;
-    // 2) 文件正确存在 -> 按 ini 登录(Java 侧解析, 支持多个前置故障切换)
-    if (IniPath <> '') and System.IOUtils.TFile.Exists(IniPath) then
-    begin
-      AddLog('[UI] 按配置登录: ' + IniPath);
-      Ctp.startFromIni(StringToJString(IniPath));
-      Exit;
-    end;
-    // 3) ini 生成失败 -> 按参数控件中的参数直接登录(取第一个交易前置)
-    if lstTDFront.Items.Count = 0 then
-    begin
-      AddLog('[UI] 没有交易前置地址, 无法登录', True);
-      Exit;
-    end;
-    FlowPath := Trim(FCurFlowPath);
-    if FlowPath = '' then
-      FlowPath := System.IOUtils.TPath.Combine(System.IOUtils.TPath.GetDocumentsPath, 'ctpflow');
-    Ctp.start(
-      StringToJString(lstTDFront.Items[0]),
-      StringToJString(FlowPath),
-      FCurProduction <> 0,
-      StringToJString(Trim(edtBrokerID.Text)),
-      StringToJString(Trim(edtusername.Text)),
-      StringToJString(Trim(edtpassword.Text)),
-      StringToJString(Trim(edtusername.Text)),
-      StringToJString(Trim(edtProduct.Text)),
-      StringToJString(Trim(edtAppID.Text)),
-      StringToJString(Trim(edtAuthCode.Text)));
-    AddLog('[UI] 已发起连接(界面参数)');
-  except
-    on E: Exception do
-      AddLog('[UI] 连接异常: ' + E.Message);
   end;
 end;
 { 读取数据库 CTPConFig, 同时填充 cbbIniFLst 与 cbbIniFLst2(两个下拉框联动)。
@@ -293,11 +262,37 @@ begin
   else
     AddLog('[DB] 数据库中没有配置, 登录将使用界面参数');
 end;
+procedure TMainFmx.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
+begin
+  CanClose := false ;
+  try
+    if (lv11.Items.count>=1) then
+      begin
+        var tmpstr:string;
+        tmpstr:='';
+        for var i := 0 to lv11.Items.count-1 do
+          begin
+            var vAItem:TListViewItem;
+            vAItem := lv11.Items[i];
+            tmpstr := tmpstr+trim((vAItem.Objects.FindDrawable('Text1') as TListItemText).Text )+',';
+          end;
+        mmo1.Lines.Clear ;
+        mmo1.Text := tmpstr ;
+        mmo1.Lines.SaveToFile(HYLstFileName);
+      end;
+  except
+
+
+  end;
+  CanClose := true ;
+end;
+
 procedure TMainFmx.FormCreate(Sender: TObject);
 begin
   FCurProduction := 1;   // 默认生产环境, FillIniList->ApplyCfgToControls 会按库里的值覆盖
   FCurFlowPath := '';
   dbFileName := System.IOUtils.TPath.Combine(System.IOUtils.TPath.GetPublicPath, 'CTPINI.db');
+  HYLstFileName := System.IOUtils.TPath.Combine(System.IOUtils.TPath.GetPublicPath, 'HYLst.ini');
   AddLog(dbFileName);
   con1.Params.Clear ;
   con1.Connected := False ;
@@ -356,6 +351,7 @@ begin
   begin
     AddLog('[DB] 已选择配置: ' + cbbIniFLst.Items[Idx]);
     ApplyCfgToControls(StrToIntDef(FCfgIds[Idx], -1));
+    btn1.Text := '删除配置';
   end;
 end;
 { 按配置号 ACfgId 读数据库回填参数控件:
@@ -449,6 +445,52 @@ end;
 { 保存配置到数据库(不再是 ini 文件):
   同名配置覆盖(UPDATE), 否则新增(INSERT); 先写 CTPConFig 主表,
   再按 CFGid 重建 TDMDFrontLST 里的前置地址。密码不入库(表无该字段)。 }
+procedure TMainFmx.DoDelCfg(const AName: string);
+var
+  Q: TFDQuery;
+  I, CfgId: Integer;
+  Name1, S: string;
+begin
+  Name1 := Trim(AName);
+  if Name1 = '' then
+    Exit;
+  Q := TFDQuery.Create(nil);
+  try
+    try
+      Q.Connection := con1;
+      // 已存在同名 -> 覆盖; 否则新增。char(30) 字段可能带尾部空格, 用 upper(trim()) 比较
+      CfgId := -1;
+      Q.SQL.Text := 'select id from CTPConFig where upper(trim(CFGNAME)) = :n order by id';
+      Q.ParamByName('n').AsString := UpperCase(Name1);
+      Q.Open;
+      if not Q.Eof then
+        CfgId := Q.FieldByName('id').AsInteger;
+      Q.Close;
+      if CfgId >= 0 then
+      begin
+        Q.SQL.Text := 'delete from  CTPConFig where id = :id ';
+        Q.ParamByName('id').AsInteger  := CfgId;
+        Q.ExecSQL;
+      end;
+      // 前置地址: 先删旧再插新, 顺序即优先级
+      Q.SQL.Text := 'delete from TDMDFrontLST where CFGid = :id';
+      Q.ParamByName('id').AsInteger := CfgId;
+      Q.ExecSQL;
+    except
+      on e:Exception do  AddLog('[DB] 删除配置: ' + Name1 + ' (' + S + ')出错：'+e.Message, True);
+    end;
+  finally
+    Q.Free;
+  end;
+  S := 'id=' + IntToStr(CfgId);
+  AddLog('[DB] 已删除配置: ' + Name1 + ' (' + S + ')', True);
+  // 刷新两个下拉框并选中新保存的配置(触发回填, 立即看到保存结果)
+  FillIniList;
+
+end;
+{ 保存配置到数据库(不再是 ini 文件):
+  同名配置覆盖(UPDATE), 否则新增(INSERT); 先写 CTPConFig 主表,
+  再按 CFGid 重建 TDMDFrontLST 里的前置地址。密码不入库(表无该字段)。 }
 procedure TMainFmx.DoSaveCfg(const AName: string);
 var
   Q: TFDQuery;
@@ -460,67 +502,71 @@ begin
     Exit;
   Q := TFDQuery.Create(nil);
   try
-    Q.Connection := con1;
-    // 已存在同名 -> 覆盖; 否则新增。char(30) 字段可能带尾部空格, 用 upper(trim()) 比较
-    CfgId := -1;
-    Q.SQL.Text := 'select id from CTPConFig where upper(trim(CFGNAME)) = :n order by id';
-    Q.ParamByName('n').AsString := UpperCase(Name1);
-    Q.Open;
-    if not Q.Eof then
-      CfgId := Q.FieldByName('id').AsInteger;
-    Q.Close;
-    if CfgId < 0 then
-    begin
-      Q.SQL.Text := 'insert into CTPConFig (CFGNAME, BrokerID, UserID, InvestorID,'
-        + ' UserProductInfo, AuthCode, AppID, Production, FlowPath)'
-        + ' values (:n, :b, :u, :i, :p, :a, :ap, :prod, :f)';
-      Q.ParamByName('n').AsString    := Name1;
-      Q.ParamByName('b').AsString    := Trim(edtBrokerID.Text);
-      Q.ParamByName('u').AsString    := Trim(edtusername.Text);
-      Q.ParamByName('i').AsString    := Trim(edtusername.Text);  // InvestorID = UserID
-      Q.ParamByName('p').AsString    := Trim(edtProduct.Text);
-      Q.ParamByName('a').AsString    := Trim(edtAuthCode.Text);
-      Q.ParamByName('ap').AsString   := Trim(edtAppID.Text);
-      Q.ParamByName('prod').AsInteger := FCurProduction;
-      Q.ParamByName('f').AsString    := FCurFlowPath;
-      Q.ExecSQL;
-      CfgId := con1.ExecSQLScalar('select last_insert_rowid()');
-    end
-    else
-    begin
-      Q.SQL.Text := 'update CTPConFig set BrokerID=:b, UserID=:u, InvestorID=:i,'
-        + ' UserProductInfo=:p, AuthCode=:a, AppID=:ap, Production=:prod, FlowPath=:f'
-        + ' where id = :id';
-      Q.ParamByName('b').AsString    := Trim(edtBrokerID.Text);
-      Q.ParamByName('u').AsString    := Trim(edtusername.Text);
-      Q.ParamByName('i').AsString    := Trim(edtusername.Text);
-      Q.ParamByName('p').AsString    := Trim(edtProduct.Text);
-      Q.ParamByName('a').AsString    := Trim(edtAuthCode.Text);
-      Q.ParamByName('ap').AsString   := Trim(edtAppID.Text);
-      Q.ParamByName('prod').AsInteger := FCurProduction;
-      Q.ParamByName('f').AsString    := FCurFlowPath;
-      Q.ParamByName('id').AsInteger  := CfgId;
-      Q.ExecSQL;
-    end;
-    // 前置地址: 先删旧再插新, 顺序即优先级
-    Q.SQL.Text := 'delete from TDMDFrontLST where CFGid = :id';
-    Q.ParamByName('id').AsInteger := CfgId;
-    Q.ExecSQL;
-    Q.SQL.Text := 'insert into TDMDFrontLST (CFGid, FrontName, FrontAddress)'
-      + ' values (:id, :n, :a)';
-    for I := 0 to lstTDFront.Items.Count - 1 do
-    begin
+    try
+      Q.Connection := con1;
+      // 已存在同名 -> 覆盖; 否则新增。char(30) 字段可能带尾部空格, 用 upper(trim()) 比较
+      CfgId := -1;
+      Q.SQL.Text := 'select id from CTPConFig where upper(trim(CFGNAME)) = :n order by id';
+      Q.ParamByName('n').AsString := UpperCase(Name1);
+      Q.Open;
+      if not Q.Eof then
+        CfgId := Q.FieldByName('id').AsInteger;
+      Q.Close;
+      if CfgId < 0 then
+      begin
+        Q.SQL.Text := 'insert into CTPConFig (CFGNAME, BrokerID, UserID, InvestorID,'
+          + ' UserProductInfo, AuthCode, AppID, Production, FlowPath)'
+          + ' values (:n, :b, :u, :i, :p, :a, :ap, :prod, :f)';
+        Q.ParamByName('n').AsString    := Name1;
+        Q.ParamByName('b').AsString    := Trim(edtBrokerID.Text);
+        Q.ParamByName('u').AsString    := Trim(edtusername.Text);
+        Q.ParamByName('i').AsString    := Trim(edtusername.Text);  // InvestorID = UserID
+        Q.ParamByName('p').AsString    := Trim(edtProduct.Text);
+        Q.ParamByName('a').AsString    := Trim(edtAuthCode.Text);
+        Q.ParamByName('ap').AsString   := Trim(edtAppID.Text);
+        Q.ParamByName('prod').AsInteger := FCurProduction;
+        Q.ParamByName('f').AsString    := FCurFlowPath;
+        Q.ExecSQL;
+        CfgId := con1.ExecSQLScalar('select last_insert_rowid()');
+      end
+      else
+      begin
+        Q.SQL.Text := 'update CTPConFig set BrokerID=:b, UserID=:u, InvestorID=:i,'
+          + ' UserProductInfo=:p, AuthCode=:a, AppID=:ap, Production=:prod, FlowPath=:f'
+          + ' where id = :id';
+        Q.ParamByName('b').AsString    := Trim(edtBrokerID.Text);
+        Q.ParamByName('u').AsString    := Trim(edtusername.Text);
+        Q.ParamByName('i').AsString    := Trim(edtusername.Text);
+        Q.ParamByName('p').AsString    := Trim(edtProduct.Text);
+        Q.ParamByName('a').AsString    := Trim(edtAuthCode.Text);
+        Q.ParamByName('ap').AsString   := Trim(edtAppID.Text);
+        Q.ParamByName('prod').AsInteger := FCurProduction;
+        Q.ParamByName('f').AsString    := FCurFlowPath;
+        Q.ParamByName('id').AsInteger  := CfgId;
+        Q.ExecSQL;
+      end;
+      // 前置地址: 先删旧再插新, 顺序即优先级
+      Q.SQL.Text := 'delete from TDMDFrontLST where CFGid = :id';
       Q.ParamByName('id').AsInteger := CfgId;
-      Q.ParamByName('n').AsString   := 'TDFRONT';
-      Q.ParamByName('a').AsString   := Trim(lstTDFront.Items[I]);
       Q.ExecSQL;
-    end;
-    for I := 0 to lstMDFront.Items.Count - 1 do
-    begin
-      Q.ParamByName('id').AsInteger := CfgId;
-      Q.ParamByName('n').AsString   := 'MDFRONT';
-      Q.ParamByName('a').AsString   := Trim(lstMDFront.Items[I]);
-      Q.ExecSQL;
+      Q.SQL.Text := 'insert into TDMDFrontLST (CFGid, FrontName, FrontAddress)'
+        + ' values (:id, :n, :a)';
+      for I := 0 to lstTDFront.Items.Count - 1 do
+      begin
+        Q.ParamByName('id').AsInteger := CfgId;
+        Q.ParamByName('n').AsString   := 'TDFRONT';
+        Q.ParamByName('a').AsString   := Trim(lstTDFront.Items[I]);
+        Q.ExecSQL;
+      end;
+      for I := 0 to lstMDFront.Items.Count - 1 do
+      begin
+        Q.ParamByName('id').AsInteger := CfgId;
+        Q.ParamByName('n').AsString   := 'MDFRONT';
+        Q.ParamByName('a').AsString   := Trim(lstMDFront.Items[I]);
+        Q.ExecSQL;
+      end;
+    except
+      on e:Exception do  AddLog('[DB] 保存配置: ' + Name1 + ' (' + S + ')出错：'+e.Message, True);
     end;
   finally
     Q.Free;
@@ -636,6 +682,19 @@ begin
   edtMdInstr.Align := TAlignLayout.Client;
   edtMdInstr.Margins.Rect := TRectF.Create(2, 6, 6, 6);
   edtMdInstr.TextPrompt := '合约代码, 可多个: rb2601,cu2508';
+  try
+    if FileExists(HYLstFileName) then
+      begin
+        var tmplst:TStringList;
+        tmplst := TStringList.Create  ;
+        tmplst.LoadFromFile(HYLstFileName);
+        edtMdInstr.Text := trim(tmplst.Text) ;
+        tmplst.Clear ;
+        tmplst.Free ;
+      end;
+  except
+
+  end;
 end;
 procedure TMainFmx.con1AfterConnect(Sender: TObject);
 begin
@@ -807,7 +866,7 @@ begin
     ColChg := TAlphaColors.Dimgray;
   end;
   SetText('Text1', Parts[1], TAlphaColors.Null); // 合约名颜色用外观默认(steelblue)
-  SetText('Text2', FormatFloat('0.00', Last), ColMain);
+  SetText('Text2', '现价 ' +FormatFloat('0.00', Last), ColMain);
   SetText('Text3', '涨跌 ' + FormatFloat('+0.00;-0.00;0.00', Chg), ColChg);
   if Pre > 0 then
     SetText('Text4', '幅度 ' + FormatFloat('+0.00;-0.00;0.00', Chg / Pre * 100) + '%', ColChg)
@@ -820,7 +879,7 @@ begin
   SetText('Text9', Parts[9], TAlphaColors.Red);
   SetText('Text10', '卖一 ' + FormatFloat('0.00', F(Parts[10])), TAlphaColors.Green);
   SetText('Text11', Parts[11], TAlphaColors.Green);
-  SetText('Text12', '开 ' + FormatFloat('0.00', F(Parts[4])), TAlphaColors.Dimgray);
+  SetText('Text12', '开盘 ' + FormatFloat('0.00', F(Parts[4])), TAlphaColors.Dimgray);
   SetText('Text13', '最高 ' + FormatFloat('0.00', F(Parts[5])), TAlphaColors.Dimgray);
   SetText('Text14', '最低 ' + FormatFloat('0.00', F(Parts[6])), TAlphaColors.Dimgray);
   SetText('Text15', '涨停 ' + FormatFloat('0.00', F(Parts[13])), TAlphaColors.Dimgray);
@@ -883,29 +942,84 @@ var
   Name1: string;
   Idx: Integer;
 begin
-  // 基本完整性检查: 缺了这些登录必失败, 存了也是废数据
-  if lstTDFront.Items.Count = 0 then
-  begin
-    AddLog('交易前置列表为空, 请先在上方输入地址后点「添加」',True);
-    Exit;
-  end;
-  if (Trim(edtBrokerID.Text) = '') or (Trim(edtusername.Text) = '')
-    or (Trim(edtpassword.Text) = '') then
-  begin
-    AddLog('BrokerID / 账号 / 密码不能为空(账号密码在登录页)',True);
-    Exit;
-  end;
   Name1 := 'ctp_new';
   Idx := cbbIniFLst.ItemIndex;
   if Idx >= 0 then
     Name1 := cbbIniFLst.Items[Idx]; // 默认覆盖当前选中项
-  var cp:TInputResultProc ;
-  cp := procedure(const AResult: TModalResult; const AValue: string)
+  if btn1.Text='保存配置' then
     begin
-      if (AResult = mrOk) and (Trim(AValue) <> '') then DoSaveCfg(Trim(AValue));
+      // 基本完整性检查: 缺了这些登录必失败, 存了也是废数据
+      if lstTDFront.Items.Count = 0 then
+      begin
+        AddLog('交易前置列表为空, 请先在上方输入地址后点「添加」',True);
+        Exit;
+      end;
+      if (Trim(edtBrokerID.Text) = '') or (Trim(edtusername.Text) = '')
+        or (Trim(edtpassword.Text) = '') then
+      begin
+        AddLog('BrokerID / 账号 / 密码不能为空(账号密码在登录页)',True);
+        Exit;
+      end;
+
+      var cp:TInputResultProc ;
+      cp := procedure(const AResult: TModalResult; const AValue: string)
+        begin
+          if (AResult = mrOk) and (Trim(AValue) <> '') then DoSaveCfg(Trim(AValue));
+        end;
+      ShowInputDialog('请输入配置名(同名覆盖)', Name1, cp,FCallback,LabelTitle,EditInput,RectMask,0);
+    end
+  else
+    begin
+      var cp:TInputResultProc ;
+      cp := procedure(const AResult: TModalResult; const AValue: string)
+        begin
+          if (AResult = mrOk) then DoDelCfg(Trim(AValue));
+        end;
+      ShowInputDialog('请确认是否删除配置(删除不可恢复)', Name1, cp,FCallback,LabelTitle,EditInput,RectMask,1);
     end;
-  ShowInputDialog('请输入配置名(同名覆盖)', '', cp,FCallback,LabelTitle,EditInput,RectMask);
 end;
+procedure TMainFmx.btnLoginClick(Sender: TObject);
+var
+  FlowPath, IniPath: string;
+begin
+  try
+    // 1) 用当前界面参数(选中配置回填或手工修改后的值)在私有目录生成登录 ini
+    IniPath := BuildLoginIni;
+    // 2) 文件正确存在 -> 按 ini 登录(Java 侧解析, 支持多个前置故障切换)
+    if (IniPath <> '') and System.IOUtils.TFile.Exists(IniPath) then
+    begin
+      AddLog('[UI] 按配置登录: ' + IniPath);
+      Ctp.startFromIni(StringToJString(IniPath));
+      Exit;
+    end;
+    // 3) ini 生成失败 -> 按参数控件中的参数直接登录(取第一个交易前置)
+    if lstTDFront.Items.Count = 0 then
+    begin
+      AddLog('[UI] 没有交易前置地址, 无法登录', True);
+      Exit;
+    end;
+    FlowPath := Trim(FCurFlowPath);
+    if FlowPath = '' then
+      FlowPath := System.IOUtils.TPath.Combine(System.IOUtils.TPath.GetDocumentsPath, 'ctpflow');
+    Ctp.start(
+      StringToJString(lstTDFront.Items[0]),
+      StringToJString(FlowPath),
+      FCurProduction <> 0,
+      StringToJString(Trim(edtBrokerID.Text)),
+      StringToJString(Trim(edtusername.Text)),
+      StringToJString(Trim(edtpassword.Text)),
+      StringToJString(Trim(edtusername.Text)),
+      StringToJString(Trim(edtProduct.Text)),
+      StringToJString(Trim(edtAppID.Text)),
+      StringToJString(Trim(edtAuthCode.Text)));
+    AddLog('[UI] 已发起连接(界面参数)');
+  except
+    on E: Exception do
+      AddLog('[UI] 连接异常: ' + E.Message);
+  end;
+
+end;
+
 procedure TMainFmx.BtnCancelClick(Sender: TObject);
 begin
   CloseDialog(mmo1,EditInput,mrCancel,FCallback,RectMask);
@@ -922,6 +1036,7 @@ begin
       btnMDFront.Text := '';
       btnMDFront.Text := '添加' ;
     end;
+  btn1.Text := '保存配置';
 end;
 function TMainFmx.Ctp: JCtpBridge;
 begin
@@ -929,6 +1044,11 @@ begin
     FCtp := TJCtpBridge.JavaClass.init;
   Result := FCtp;
 end;
+procedure TMainFmx.edtBrokerIDChange(Sender: TObject);
+begin
+  btn1.Text := '保存配置';
+end;
+
 procedure TMainFmx.edtMDFrontAddressKeyUp(Sender: TObject; var Key: Word;
   var KeyChar: Char; Shift: TShiftState);
 begin
