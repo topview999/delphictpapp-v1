@@ -825,6 +825,7 @@ begin
   SetText('Text14', '最低 ' + FormatFloat('0.00', F(Parts[6])), TAlphaColors.Dimgray);
   SetText('Text15', '涨停 ' + FormatFloat('0.00', F(Parts[13])), TAlphaColors.Dimgray);
   SetText('Text16', '跌停 ' + FormatFloat('0.00', F(Parts[14])), TAlphaColors.Dimgray);
+  SetText('Text18', '昨收 ' + FormatFloat('0.00', F(Parts[2])), TAlphaColors.Dimgray);
 end;
 { 行内「退订」按钮(TextButton3): 退订该行合约并把该行从行情表移除。 }
 procedure TMainFmx.lv11ButtonClick(const Sender: TObject; const AItem: TListItem;
